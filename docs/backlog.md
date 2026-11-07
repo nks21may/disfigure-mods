@@ -45,14 +45,21 @@ dotnet test DisfigureMods.slnx
 
 ---
 
-## Fase 1 — Mod de ejemplo
+## Fase 1 — Timer del escudo en el HUD
 
-- [ ] **D1 — El núcleo formatea las stats del jugador.** *Depende de D0.*
-      *Test:* `FormatoDeStats.Formatear` recibe un `StatsDelJugador` (nivel, vida máxima,
-      velocidad, daño de bala, velocidad de bala, daño cuerpo a cuerpo) y devuelve seis
-      líneas `Nombre: valor` en ese orden, con dos decimales; con la cultura del hilo en
-      `es-AR`, el separador decimal sigue siendo el punto (`1234.50`, nunca `1234,50`).
-      **Se espera rojo:** no compila, porque `StatsDelJugador` no existe.
+El objetivo es que el HUD de la partida muestre cuánto falta para que vuelva el escudo
+después de que lo rompen. El juego guarda ese tiempo pero no lo muestra. En
+`Assembly-CSharp` hay dos escudos candidatos: la barrera (`PlayerStats.shieldBarrierCooldown`,
+`PlayerStats.shieldBarrierTimer`, `WeaponManager.shieldBarrierActive`) y el escudo de
+proyectiles (`WeaponManager.projectileShieldRechargeTimer`,
+`WeaponManager.ProjectileShieldRechargeDuration`, `WeaponManager.projectileShieldIsActive`).
+Los nombres no dicen si el timer cuenta para arriba o para abajo: eso lo responde D5.
+
+- [ ] **D1 — El núcleo formatea un tiempo restante como `m:ss`.** *Depende de D0.*
+      *Test:* `FormatoDeTiempo.Formatear` con segundos `float`: `83.0` → `1:23`, `5.0` →
+      `0:05`, `720.0` → `12:00`. Redondea para arriba, así el HUD no muestra `0:00` mientras
+      falta algo (`0.2` → `0:01`), y un valor negativo da `0:00`.
+      **Se espera rojo:** no compila, porque `FormatoDeTiempo` no existe.
       Ver [ADR-0002](adr/0002-logica-pura-separada-del-juego.md).
 - [ ] **D2 — Los proyectos de mods encuentran la instalación del juego.** *Depende de D0.*
       Un `Juego.props` define `RutaJuego` (por defecto
@@ -65,31 +72,37 @@ dotnet test DisfigureMods.slnx
       **Se espera rojo:** sin el chequeo, el build falla con un `CS0246` sobre un tipo del
       juego y no dice qué ruta buscó.
       Ver [ADR-0003](adr/0003-un-proyecto-por-mod.md).
-- [ ] **D3 — El mod de ejemplo se identifica para MelonLoader.** *Depende de D2.*
-      `src/Disfigure.Mods.Ejemplo` (`net6.0`, importa `Juego.props`) declara `MelonInfo` y
-      `MelonGame("ColdBrew Entertainment", "Disfigure")`, así no se carga en otro juego.
+- [ ] **D3 — El mod de timers se identifica para MelonLoader.** *Depende de D2.*
+      `src/Disfigure.Mods.Temporizadores` (`net6.0`, importa `Juego.props`) declara
+      `MelonInfo` y `MelonGame("ColdBrew Entertainment", "Disfigure")`, así no se carga en
+      otro juego.
       *Test:* leyendo el DLL compilado con `MetadataLoadContext` (sin cargar MelonLoader), el
       ensamblado tiene `MelonGame` con esos dos textos exactos y `MelonInfo` con nombre y
       versión no vacíos.
       **Se espera rojo:** el test no compila, porque el proyecto no existe.
       Ver [ADR-0003](adr/0003-un-proyecto-por-mod.md).
 - [ ] **D4 — El build despliega el mod en el juego cuando se le pide.** *Depende de D3.*
-      `dotnet build -p:Desplegar=true` copia `Disfigure.Mods.Ejemplo.dll` a `Mods\` y
+      `dotnet build -p:Desplegar=true` copia `Disfigure.Mods.Temporizadores.dll` a `Mods\` y
       `Disfigure.Nucleo.dll` a `UserLibs\` dentro de `RutaJuego`; sin la propiedad no copia
       nada. Escribe la sección "Arranque rápido" del README.
       *Test:* compilar con `-p:Desplegar=true` y las carpetas de destino pisadas a una
       carpeta temporal deja los dos DLL ahí; sin `Desplegar`, la carpeta queda vacía.
       **Se espera rojo:** la carpeta temporal queda vacía.
       Ver [ADR-0003](adr/0003-un-proyecto-por-mod.md).
-- [ ] **D5 — F8 en una partida loguea las stats del jugador.** *Depende de D1 y D4.*
-      El mod lee `Il2Cpp.PlayerStats` (`level`, `maxHealth`, `speed`, `bulletDamage`,
-      `bulletSpeed`, `meleeDamage`), arma un `StatsDelJugador` y escribe
-      `FormatoDeStats.Formatear` con `MelonLogger`.
-      *Test:* verificación en el juego: con el mod desplegado, F8 en una partida escribe en
-      `MelonLoader\Latest.log` las seis líneas con valores reales, y la bitácora pega el
-      extracto. La parte con tests unitarios es D1.
-      **Se espera rojo:** antes del código, F8 no escribe nada en el log.
-      **Necesita al usuario con el juego abierto.**
+- [ ] **D5 — Diagnóstico: el mod registra los campos de los dos escudos.** *Depende de D4.*
+      Mientras haya un `PlayerStats` en la escena, el mod escribe con `MelonLogger` una línea
+      por segundo con `PlayerStats.shieldBarrierCooldown`, `PlayerStats.shieldBarrierTimer`,
+      `PlayerStats.projectileShield`, `WeaponManager.shieldBarrierActive`,
+      `WeaponManager.projectileShieldRechargeTimer`,
+      `WeaponManager.ProjectileShieldRechargeDuration`,
+      `WeaponManager.projectileShieldIsActive` y `WeaponManager.tempShieldHits`.
+      *Test:* verificación en el juego: con el poder del escudo, el usuario deja que se lo
+      rompan y espera a que vuelva. La bitácora pega el extracto de `Latest.log` y anota qué
+      campo es el del poder, si cuenta para arriba o para abajo y contra qué valor. Esa
+      respuesta destraba los parkeados de esta fase.
+      **Se espera rojo:** antes del código, `Latest.log` no tiene ninguna línea del mod.
+      **Necesita al usuario con el juego abierto,** y que diga cómo se llama el poder en el
+      juego.
       Ver [ADR-0002](adr/0002-logica-pura-separada-del-juego.md).
 
 ---
@@ -99,5 +112,16 @@ dotnet test DisfigureMods.slnx
 Ideas que todavía no son trabajo tomable: les falta una decisión del usuario o un
 dato. Van **sin checkbox** para que el loop no las tome ni las cuente.
 
+- **El núcleo calcula cuánto falta para que vuelva el escudo.** Falta el dato de D5: qué
+  campo es, si cuenta para arriba o para abajo y contra qué duración. Con eso se escribe el
+  test y pasa a ser un ítem.
+- **El timer del escudo aparece en el HUD de la partida, y desaparece cuando el escudo está
+  listo.** Antes del test va un ADR sobre cómo se dibuja: IMGUI (`OnGUI` de MelonLoader; el
+  juego ya lo usa en algunos scripts) o Unity UI con TextMeshPro, como `ToggleStatusHud`
+  del juego. Depende del cálculo de arriba.
+- **Más timers en el HUD**, como el dash (`PlayerStats.dashRechargeTimer`), el parry
+  (`WeaponManager.parryRechargeTimer`) o la invulnerabilidad
+  (`WeaponManager.invulnerabilityTimer`), definidos en una sola lista. Recién cuando el del
+  escudo funcione de punta a punta, y el usuario elija cuáles.
 - **`Disfigure.Comun` en `UserLibs\`**, con el pegamento compartido con el juego. Recién
   cuando un segundo mod repita código del primero (ADR-0003).
