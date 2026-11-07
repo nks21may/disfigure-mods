@@ -47,9 +47,9 @@ dotnet test DisfigureMods.slnx
 
 ## Fase 1 — Timer del escudo en el HUD
 
-El objetivo es que el HUD de la partida muestre cuánto falta para que vuelva el escudo
+El objetivo es que el HUD de la partida muestre cuánto falta para que vuelva cada escudo
 después de que lo rompen. El juego guarda ese tiempo pero no lo muestra. En
-`Assembly-CSharp` hay dos escudos candidatos: la barrera (`PlayerStats.shieldBarrierCooldown`,
+`Assembly-CSharp` hay dos escudos, y van los dos, cada uno con su timer: la barrera (`PlayerStats.shieldBarrierCooldown`,
 `PlayerStats.shieldBarrierTimer`, `WeaponManager.shieldBarrierActive`) y el escudo de
 proyectiles (`WeaponManager.projectileShieldRechargeTimer`,
 `WeaponManager.ProjectileShieldRechargeDuration`, `WeaponManager.projectileShieldIsActive`).
@@ -96,13 +96,13 @@ Los nombres no dicen si el timer cuenta para arriba o para abajo: eso lo respond
       `WeaponManager.projectileShieldRechargeTimer`,
       `WeaponManager.ProjectileShieldRechargeDuration`,
       `WeaponManager.projectileShieldIsActive` y `WeaponManager.tempShieldHits`.
-      *Test:* verificación en el juego: con el poder del escudo, el usuario deja que se lo
-      rompan y espera a que vuelva. La bitácora pega el extracto de `Latest.log` y anota qué
-      campo es el del poder, si cuenta para arriba o para abajo y contra qué valor. Esa
-      respuesta destraba los parkeados de esta fase.
+      *Test:* verificación en el juego: con cada uno de los dos escudos, el usuario deja que
+      se lo rompan y espera a que vuelva. La bitácora pega el extracto de `Latest.log` y
+      anota, para cada escudo, qué campos son los suyos, si el timer cuenta para arriba o
+      para abajo y contra qué valor. Esa respuesta destraba los parkeados de esta fase.
       **Se espera rojo:** antes del código, `Latest.log` no tiene ninguna línea del mod.
-      **Necesita al usuario con el juego abierto,** y que diga cómo se llama el poder en el
-      juego.
+      **Necesita al usuario con el juego abierto,** y que diga cómo se llaman los dos poderes
+      en el juego.
       Ver [ADR-0002](adr/0002-logica-pura-separada-del-juego.md).
 
 ---
@@ -112,11 +112,11 @@ Los nombres no dicen si el timer cuenta para arriba o para abajo: eso lo respond
 Ideas que todavía no son trabajo tomable: les falta una decisión del usuario o un
 dato. Van **sin checkbox** para que el loop no las tome ni las cuente.
 
-- **El núcleo calcula cuánto falta para que vuelva el escudo.** Falta el dato de D5: qué
-  campo es, si cuenta para arriba o para abajo y contra qué duración. Con eso se escribe el
-  test y pasa a ser un ítem.
-- **El timer del escudo aparece en el HUD de la partida, y desaparece cuando el escudo está
-  listo.** Antes del test va un ADR sobre cómo se dibuja: IMGUI (`OnGUI` de MelonLoader; el
+- **El núcleo calcula cuánto falta para que vuelva cada escudo.** Falta el dato de D5: qué
+  campos son los de cada uno, si cuentan para arriba o para abajo y contra qué duración.
+  Con eso se escribe el test y pasa a ser un ítem.
+- **Los timers de los dos escudos aparecen en el HUD de la partida, y cada uno desaparece
+  cuando su escudo está listo.** Antes del test va un ADR sobre cómo se dibuja: IMGUI (`OnGUI` de MelonLoader; el
   juego ya lo usa en algunos scripts) o Unity UI con TextMeshPro, como `ToggleStatusHud`
   del juego. Depende del cálculo de arriba.
 - **Más timers en el HUD**, como el dash (`PlayerStats.dashRechargeTimer`), el parry
