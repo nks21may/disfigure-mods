@@ -9,8 +9,8 @@ Plantilla: [0000-plantilla.md](0000-plantilla.md).
 | # | Decisión | Estado |
 |---|---|---|
 | [0001](0001-melonloader-net6-y-gate-en-el-host.md) | MelonLoader 0.7.3, `net6.0` para lo que carga el juego y el gate en el host con el lint en el build | aceptado |
-| [0002](0002-logica-pura-separada-del-juego.md) | La lógica va en `Disfigure.Nucleo`, sin referencias al juego, y es lo único con tests unitarios | propuesto |
-| [0003](0003-un-proyecto-por-mod.md) | Un proyecto por mod, lo compartido en `UserLibs\` y los assemblies del juego nunca se versionan | propuesto |
+| [0002](0002-logica-pura-separada-del-juego.md) | La lógica va en `Disfigure.Nucleo`, sin referencias al juego, y es lo único con tests unitarios | aceptado |
+| [0003](0003-un-proyecto-por-mod.md) | Un proyecto por mod, lo compartido en `UserLibs\` y los assemblies del juego nunca se versionan | aceptado |
 
 ## Cuándo escribir uno
 

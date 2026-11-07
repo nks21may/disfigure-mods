@@ -1,6 +1,6 @@
 # ADR-0002 — La lógica va en `Disfigure.Nucleo`, sin referencias al juego, y es lo único con tests unitarios
 
-- **Estado:** propuesto
+- **Estado:** aceptado (propuesto el 2026-11-07; confirmado por el usuario el 2026-11-07)
 - **Fecha:** 2026-11-07
 - **Decide:** qué parte de un mod se construye con TDD en el host y qué parte se verifica en
   el juego

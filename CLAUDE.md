@@ -22,6 +22,13 @@ aunque los tests pasen.
    DisfigureMods.slnx` en el host con los analizadores como errores.** MelonLoader 0.7.3
    carga los mods en .NET 6, y el lint vive en el build, no en un comando aparte.
    [ADR-0001](docs/adr/0001-melonloader-net6-y-gate-en-el-host.md)
+2. **La lógica va en `Disfigure.Nucleo`, que no referencia a MelonLoader, Harmony,
+   Il2CppInterop ni los `Il2CppAssemblies`, y es lo único con tests unitarios.** Los mods
+   son pegamento fino que se verifica en el juego, con el extracto de `Latest.log` en la
+   bitácora. [ADR-0002](docs/adr/0002-logica-pura-separada-del-juego.md)
+3. **Un proyecto por mod, y lo compartido va a `UserLibs\`.** Las referencias al juego y a
+   MelonLoader salen de la instalación local con `Private=false`: ningún DLL del juego ni
+   de MelonLoader entra al repo. [ADR-0003](docs/adr/0003-un-proyecto-por-mod.md)
 
 ## Convenciones
 

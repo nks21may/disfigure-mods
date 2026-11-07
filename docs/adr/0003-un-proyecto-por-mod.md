@@ -1,6 +1,6 @@
 # ADR-0003 — Un proyecto por mod, lo compartido en `UserLibs\` y los assemblies del juego nunca se versionan
 
-- **Estado:** propuesto
+- **Estado:** aceptado (propuesto el 2026-11-07; confirmado por el usuario el 2026-11-07)
 - **Fecha:** 2026-11-07
 - **Decide:** cómo crece el repo cuando hay más de un mod, y de dónde salen las referencias
   al juego
