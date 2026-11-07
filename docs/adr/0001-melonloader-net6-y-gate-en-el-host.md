@@ -54,6 +54,11 @@ tests pasan. Si alguien cambia `net6.0` por error, lo detecta
   aplicaciones bloqueó este archivo (0x800711C7)` al cargar `Disfigure.Nucleo.dll`, con el
   evento 3077 en `Microsoft-Windows-CodeIntegrity/Operational`.
 
+  > **Corrección (2026-11-07, más tarde):** no bloquea todos los DLL sin firmar. Decide
+  > archivo por archivo: en el juego dejó pasar 151 de los 154 assemblies que genera
+  > MelonLoader, y en el gate dejó pasar `Disfigure.Nucleo.Tests.dll`. La evidencia está
+  > en la entrada de la [bitácora](../bitacora.md) del mismo día. La decisión no cambia.
+
 **Se revisa si:** MelonLoader pasa a hospedar los mods en otra versión de .NET (cambia su
 `runtimeconfig.json`), o una actualización del juego rompe la generación de assemblies.
 

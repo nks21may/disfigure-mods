@@ -15,10 +15,12 @@ Requisitos:
 - Disfigure instalado con MelonLoader 0.7.3 y arrancado al menos una vez, para que
   existan `MelonLoader\Il2CppAssemblies`.
 - El .NET SDK 10: `winget install Microsoft.DotNet.SDK.10`.
-- **Smart App Control desactivado.** Con Smart App Control activado, Windows no deja
-  cargar los DLL sin firmar que se compilan acá: el gate da rojo con
-  `FileLoadException ... Una directiva de Control de aplicaciones bloqueó este archivo
-  (0x800711C7)`.
+- **Smart App Control desactivado.** Con Smart App Control activado, Windows decide
+  archivo por archivo si deja cargar un DLL sin firmar, y cada recompilación es un archivo
+  nuevo que vuelve a evaluar. El 2026-11-07 bloqueó `Disfigure.Nucleo.dll` en el gate
+  (`FileLoadException ... Una directiva de Control de aplicaciones bloqueó este archivo
+  (0x800711C7)`) y 3 de los 154 assemblies que genera MelonLoader en el juego, mientras
+  dejaba pasar el resto. Así, el gate y los mods dan rojos al azar.
 
 Todavía no hay mods que desplegar: el ítem que arma el despliegue (D4) escribe el resto de
 esta sección.

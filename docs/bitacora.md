@@ -74,3 +74,63 @@ certificado que Windows acepte. Mientras tanto, el loop no arranca.
 loop. La primera iteración real del loop es **D1**.
 
 **Sha:** 78947d8
+
+---
+
+## D0 — Corrección: Smart App Control decide archivo por archivo · 2026-11-07
+
+No es una iteración del loop: corrige una afirmación de la preparación. El README y el
+ADR-0001 decían que Smart App Control no deja cargar *los* DLL sin firmar que se compilan
+acá, como si fueran todos. No es así.
+
+**Archivos:** `README.md`, `docs/adr/0001-melonloader-net6-y-gate-en-el-host.md`,
+`docs/bitacora.md`
+
+**Evidencia.** El usuario abrió el juego dos veces (19:00 y 20:02) y vio un par de avisos
+de Smart App Control. En `Microsoft-Windows-CodeIntegrity/Operational` hay 80 eventos de
+bloqueo de las últimas tres horas fuera de este repo, y son 12 líneas distintas. Los tres
+archivos son siempre los mismos, en los dos arranques:
+
+```
+19:00:18  id=3033  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.ShaderRuntimeModule.dll
+19:00:18  id=3077  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.ShaderRuntimeModule.dll
+19:00:22  id=3033  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll
+19:00:22  id=3077  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll
+19:00:33  id=3033  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll
+19:00:33  id=3077  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll
+20:02:48  id=3033  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.ShaderRuntimeModule.dll
+20:02:48  id=3033  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll
+20:02:48  id=3077  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.ShaderRuntimeModule.dll
+20:02:48  id=3077  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.TerrainPhysicsModule.dll
+20:02:49  id=3033  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll
+20:02:49  id=3077  Disfigure.exe  ->  \SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies\UnityEngine.UnityWebRequestTextureModule.dll
+```
+
+Los otros 151 assemblies que generó MelonLoader en esta máquina, todos sin firmar, cargaron
+bien, y el juego arrancó igual. En `MelonLoader\Latest.log` del arranque de las 20:02:
+
+```
+[20:02:41.069] 0 UserLibs loaded.
+[20:02:41.073] 0 Plugins loaded.
+[20:02:42.332] 0 Mods loaded.
+[20:02:50.921] Support Module Loaded: J:\SteamLibrary\steamapps\common\Disfigure\MelonLoader\Dependencies\SupportModules\Il2Cpp.dll
+```
+
+En el gate pasa lo mismo: `Disfigure.Nucleo.Tests.dll`, también sin firmar, carga, y
+`Disfigure.Nucleo.dll` no. La corrida que siguió a esos arranques da igual que las
+anteriores (salida filtrada a las líneas de resultado):
+
+```
+Smart App Control (1 = activado): 1
+[xUnit.net 00:00:01.01]     Disfigure.Nucleo.Tests.HarnessTests.El_nucleo_compila_para_el_runtime_de_MelonLoader [FAIL]
+Con error Disfigure.Nucleo.Tests.HarnessTests.El_nucleo_compila_para_el_runtime_de_MelonLoader [33 ms]
+System.IO.FileLoadException : Could not load file or assembly 'P:\disfigure-mods\tests\Disfigure.Nucleo.Tests\bin\Debug\net10.0\Disfigure.Nucleo.dll'. Una directiva de Control de aplicaciones bloqueó este archivo. (0x800711C7)
+Con error! - Con error:     1, Superado:     1, Omitido:     0, Total:     2, Duración: 51 ms - Disfigure.Nucleo.Tests.dll (net10.0)
+EXIT=1
+```
+
+**Qué cambia:** que un mod cargue o no con Smart App Control activado no se puede saber de
+antemano, y cada recompilación es un archivo nuevo que Windows vuelve a evaluar. D0 sigue
+sin tildar por el mismo motivo.
+
+**Sha:** el commit que agrega esta entrada (`D0: corrección sobre Smart App Control`).
