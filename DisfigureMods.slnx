@@ -1,8 +1,1 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/Disfigure.Nucleo/Disfigure.Nucleo.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/Disfigure.Nucleo.Tests/Disfigure.Nucleo.Tests.csproj" />
-  </Folder>
-</Solution>
+<Solution />

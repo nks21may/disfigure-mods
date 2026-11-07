@@ -28,8 +28,3 @@ dotnet_diagnostic.IDE0161.severity = warning
 
 dotnet_sort_system_directives_first = true
 csharp_new_line_before_open_brace = all
-
-[tests/**.cs]
-# Los tests se nombran por comportamiento, con guiones bajos:
-# `Una_edicion_es_un_evento_distinto`, no `Normalizar2`.
-dotnet_diagnostic.CA1707.severity = none

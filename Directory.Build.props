@@ -8,7 +8,7 @@
     <!--
       El lint es parte del build: los analizadores y las reglas de estilo de
       .editorconfig corren al compilar y un hallazgo es un error, así que
-      `dotnet test` no puede dar verde con lint pendiente (ADR-0001).
+      `dotnet build` no termina con lint pendiente (ADR-0001).
     -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>

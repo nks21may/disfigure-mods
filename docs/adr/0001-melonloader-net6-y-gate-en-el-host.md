@@ -1,6 +1,8 @@
 # ADR-0001 — MelonLoader 0.7.3, `net6.0` para lo que carga el juego y el gate en el host con el lint en el build
 
-- **Estado:** aceptado (el usuario eligió MelonLoader y el gate en el host el 2026-11-07)
+- **Estado:** aceptado (el usuario eligió MelonLoader y el gate en el host el 2026-11-07);
+  la parte del gate la reemplaza [ADR-0004](0004-sin-gate-se-prueba-en-el-juego.md). Siguen
+  vigentes MelonLoader, `net6.0` y el lint en el build.
 - **Fecha:** 2026-11-07
 - **Decide:** con qué se cargan los mods, para qué runtime se compilan y qué comando dice
   que algo está hecho
@@ -57,7 +59,8 @@ tests pasan. Si alguien cambia `net6.0` por error, lo detecta
   > **Corrección (2026-11-07, más tarde):** no bloquea todos los DLL sin firmar. Decide
   > archivo por archivo: en el juego dejó pasar 151 de los 154 assemblies que genera
   > MelonLoader, y en el gate dejó pasar `Disfigure.Nucleo.Tests.dll`. La evidencia está
-  > en la entrada de la [bitácora](../bitacora.md) del mismo día. La decisión no cambia.
+  > en la entrada de la bitácora del mismo día (commit `16a63a1`; la bitácora se borró con
+  > ADR-0004). La decisión no cambia.
 
 **Se revisa si:** MelonLoader pasa a hospedar los mods en otra versión de .NET (cambia su
 `runtimeconfig.json`), o una actualización del juego rompe la generación de assemblies.
