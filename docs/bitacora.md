@@ -73,4 +73,4 @@ certificado que Windows acepte. Mientras tanto, el loop no arranca.
 **Nota:** D0 lo dejó armado la sesión de preparación, no una iteración del
 loop. La primera iteración real del loop es **D1**.
 
-**Sha:** pendiente
+**Sha:** 78947d8
