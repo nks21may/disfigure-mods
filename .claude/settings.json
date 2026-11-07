@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet test DisfigureMods.slnx)",
+      "Bash(dotnet test DisfigureMods.slnx*)",
+      "PowerShell(dotnet test DisfigureMods.slnx)",
+      "PowerShell(dotnet test DisfigureMods.slnx*)",
+      "Bash(git status --short)",
+      "Bash(git branch --show-current)",
+      "mcp__codebase-memory-mcp__search_graph",
+      "mcp__codebase-memory-mcp__search_code",
+      "mcp__codebase-memory-mcp__get_code_snippet",
+      "mcp__codebase-memory-mcp__trace_path",
+      "mcp__codebase-memory-mcp__query_graph",
+      "mcp__codebase-memory-mcp__get_architecture",
+      "mcp__codebase-memory-mcp__get_graph_schema",
+      "mcp__codebase-memory-mcp__list_projects",
+      "mcp__codebase-memory-mcp__index_status",
+      "mcp__codebase-memory-mcp__detect_changes"
+    ]
+  }
+}

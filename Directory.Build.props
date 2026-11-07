@@ -1,0 +1,31 @@
+<Project>
+  <!-- Vale para todos los proyectos del repo. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!--
+      El lint es parte del build: los analizadores y las reglas de estilo de
+      .editorconfig corren al compilar y un hallazgo es un error, así que
+      `dotnet test` no puede dar verde con lint pendiente (ADR-0001).
+    -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+
+    <!--
+      IDE0005 (usings sin usar) sólo se reporta en el build con la documentación
+      XML activada. CS1591 (falta el comentario XML) se apaga: documentar cada
+      miembro público no es una regla de este repo.
+    -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!--
+      MelonLoader 0.7.3 carga los mods en .NET 6, que ya no tiene soporte. Sin
+      esto el SDK avisa (NETSDK1138) y, con los avisos como errores, no compila.
+    -->
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
+  </PropertyGroup>
+</Project>

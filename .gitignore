@@ -1,0 +1,19 @@
+# Salidas del build y de los tests.
+bin/
+obj/
+TestResults/
+
+# IDE.
+.vs/
+.idea/
+*.user
+*.suo
+
+# Configuración local que nunca entra.
+.env
+.env.local
+
+# Los assemblies del juego no se versionan (ADR-0003): se referencian desde la
+# instalación local. Si alguno aparece copiado acá, es un error.
+Il2CppAssemblies/
+Assembly-CSharp.dll

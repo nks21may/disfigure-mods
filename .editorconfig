@@ -1,0 +1,35 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{csproj,props,targets,slnx,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# Estas reglas las verifica el build (EnforceCodeStyleInBuild en Directory.Build.props),
+# y con TreatWarningsAsErrors un hallazgo deja el gate en rojo (ADR-0001).
+
+# Formato.
+dotnet_diagnostic.IDE0055.severity = warning
+# Usings sin usar.
+dotnet_diagnostic.IDE0005.severity = warning
+# Namespaces de archivo, no de bloque.
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_diagnostic.IDE0161.severity = warning
+
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+
+[tests/**.cs]
+# Los tests se nombran por comportamiento, con guiones bajos:
+# `Una_edicion_es_un_evento_distinto`, no `Normalizar2`.
+dotnet_diagnostic.CA1707.severity = none
