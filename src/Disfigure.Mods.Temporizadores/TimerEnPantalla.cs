@@ -9,25 +9,26 @@ internal enum Cambio
 }
 
 /// <summary>
-/// El texto de un timer en el HUD. Se actualiza en <c>OnUpdate</c> y se lee en <c>OnGUI</c>.
+/// Un timer del HUD. Se actualiza en <c>OnUpdate</c> y se lee en <c>OnGUI</c>.
 /// </summary>
 internal sealed class TimerEnPantalla
 {
-    internal TimerEnPantalla(string nombre)
+    internal TimerEnPantalla(string poder)
     {
-        Nombre = nombre;
+        Poder = poder;
     }
 
-    internal string Nombre { get; }
+    /// <summary>El nombre del poder en el juego, como en su carta.</summary>
+    internal string Poder { get; }
 
-    /// <summary>Lo que se dibuja, o <c>null</c> si el timer no se muestra.</summary>
-    internal string? Texto { get; private set; }
+    /// <summary>Lo que falta como <c>m:ss</c>, o <c>null</c> si el timer no se muestra.</summary>
+    internal string? Tiempo { get; private set; }
 
     internal Cambio Actualizar(float? falta)
     {
-        var antes = Texto is not null;
-        Texto = falta is { } segundos ? $"{Nombre}  {FormatoDeTiempo.Formatear(segundos)}" : null;
-        var ahora = Texto is not null;
+        var antes = Tiempo is not null;
+        Tiempo = falta is { } segundos ? FormatoDeTiempo.Formatear(segundos) : null;
+        var ahora = Tiempo is not null;
 
         if (antes == ahora)
         {

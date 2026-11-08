@@ -94,6 +94,15 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       `timer=120.00 cooldown=120.00`. A mitad de la partida el cooldown de la barrera bajó de
       180 a 120, seguramente por una mejora de enfriamiento: el mod lo siguió porque lee
       `shieldBarrierCooldown` en cada frame.
+- [ ] **5. El icono del poder en lugar del nombre, arriba a la derecha.** A pedido del
+      usuario, para que no se superponga con el resto del HUD: los timers van contra el
+      borde derecho, a 2/5 de la altura de la pantalla (debajo de la puntuación), y cada uno
+      muestra el icono de la carta de su poder (`Upgrade.authoritativeUpgradeCardIconSprite`,
+      buscado por `Upgrade.upgradeName`) en lugar del nombre. Si no encuentra el icono,
+      deja el nombre. Las medidas se escalan con el alto de la pantalla.
+      *Hecho cuando:* en una partida, cada timer aparece arriba a la derecha con el icono de
+      su poder, y `Latest.log` muestra qué sprite usó para cada uno.
+      **Necesita al usuario con el juego abierto.**
 
 ---
 
