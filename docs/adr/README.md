@@ -12,6 +12,7 @@ Plantilla: [0000-plantilla.md](0000-plantilla.md).
 | [0002](0002-logica-pura-separada-del-juego.md) | La lógica va en `Disfigure.Nucleo`, sin referencias al juego, y es lo único con tests unitarios | reemplazado por 0004 |
 | [0003](0003-un-proyecto-por-mod.md) | Un proyecto por mod, lo compartido en `UserLibs\` y los assemblies del juego nunca se versionan | aceptado |
 | [0004](0004-sin-gate-se-prueba-en-el-juego.md) | Sin gate ni tests: un paso está hecho cuando compila y se vio funcionar en el juego | aceptado |
+| [0005](0005-timers-con-imgui.md) | Los timers del HUD se dibujan con IMGUI desde el `OnGUI` de MelonLoader | aceptado |
 
 ## Cuándo escribir uno
 

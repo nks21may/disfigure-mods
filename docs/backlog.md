@@ -77,7 +77,7 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       - En los últimos 4 segundos, el timer de proyectiles se quedó en 116.31 mientras el de
         la barrera seguía subiendo. No sabemos por qué; si se repite en el paso 4, hay que
         mirarlo.
-- [ ] **4. Los timers de los dos escudos en el HUD.** Antes del código, un ADR sobre cómo se
+- [x] **4. Los timers de los dos escudos en el HUD.** Antes del código, un ADR sobre cómo se
       dibuja: IMGUI (`OnGUI` de MelonLoader; el juego ya lo usa en algunos scripts) o Unity
       UI con TextMeshPro, como `ToggleStatusHud` del juego. Cada timer se muestra como
       `m:ss`, redondeado para arriba (así nunca dice `0:00` mientras falta algo), y
@@ -87,6 +87,13 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       *Hecho cuando:* en una partida, al romperse cada escudo aparece su timer, baja hasta
       que el escudo vuelve y desaparece.
       **Necesita al usuario con el juego abierto.**
+
+      **Resultado (partida del 2026-11-07, desde las 21:22):** el usuario vio los dos timers
+      funcionar. En `Latest.log`, la Projectile Barrier apareció en `2:00` y desapareció con
+      `timer=0.00 activo=True`; la Shield Barrier apareció en `3:00` y desapareció con
+      `timer=120.00 cooldown=120.00`. A mitad de la partida el cooldown de la barrera bajó de
+      180 a 120, seguramente por una mejora de enfriamiento: el mod lo siguió porque lee
+      `shieldBarrierCooldown` en cada frame.
 
 ---
 
