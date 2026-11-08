@@ -17,7 +17,7 @@
 - MelonLoader 0.7.3 se probó el 2026-11-07 y funcionó al primer intento. En
   `MelonLoader\Latest.log`, Cpp2IL `2022.1.0-pre-release.21` reporta `Using actual IL2CPP
   Metadata version 39`, Il2CppInterop `1.5.1-ci.845` genera los assemblies, y el log cierra
-  con `Assembly Generation Successful!`. Quedaron 154 assemblies en
+  con `Assembly Generation Successful!`. Quedaron 152 assemblies en
   `MelonLoader\Il2CppAssemblies`, entre ellos `Assembly-CSharp.dll` con 1092 tipos.
 - MelonLoader hospeda los mods en .NET 6: `MelonLoader\net6\MelonLoader.runtimeconfig.json`
   pide `net6.0` con `rollForward: LatestMinor`, que no salta de versión mayor. Un mod
@@ -57,7 +57,7 @@ tests pasan. Si alguien cambia `net6.0` por error, lo detecta
   evento 3077 en `Microsoft-Windows-CodeIntegrity/Operational`.
 
   > **Corrección (2026-11-07, más tarde):** no bloquea todos los DLL sin firmar. Decide
-  > archivo por archivo: en el juego dejó pasar 151 de los 154 assemblies que genera
+  > archivo por archivo: en el juego dejó pasar 149 de los 152 assemblies que genera
   > MelonLoader, y en el gate dejó pasar `Disfigure.Nucleo.Tests.dll`. La evidencia está
   > en la entrada de la bitácora del mismo día (commit `16a63a1`; la bitácora se borró con
   > ADR-0004). La decisión no cambia.

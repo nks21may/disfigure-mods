@@ -30,4 +30,13 @@
     <Error Condition="!Exists('$(RutaIl2CppAssemblies)Assembly-CSharp.dll')"
            Text="No encontré el juego con MelonLoader: falta $(RutaIl2CppAssemblies)Assembly-CSharp.dll. Abrí Disfigure una vez con MelonLoader instalado para que lo genere, o apuntá la variable de entorno DISFIGURE_RUTA_JUEGO a la carpeta del juego." />
   </Target>
+
+  <!--
+    Con -p:Desplegar=true, el DLL del mod se copia a la carpeta Mods del juego. Sin esa
+    propiedad, el build no toca la instalación del juego.
+  -->
+  <Target Name="Desplegar" AfterTargets="Build" Condition="'$(Desplegar)' == 'true'">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RutaJuego)Mods\" />
+    <Message Importance="high" Text="Desplegado: $(TargetFileName) -> $(RutaJuego)Mods\" />
+  </Target>
 </Project>

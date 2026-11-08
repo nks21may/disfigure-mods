@@ -32,13 +32,13 @@ paso 3.
       dice qué ruta buscó y qué variable la pisa.
       *Hecho cuando:* el proyecto del paso 2 compila contra el juego, y con
       `DISFIGURE_RUTA_JUEGO` apuntando a una carpeta vacía el build muestra ese error.
-- [ ] **2. El mod carga en el juego.** `src/Disfigure.Mods.Temporizadores` (`net6.0`,
+- [x] **2. El mod carga en el juego.** `src/Disfigure.Mods.Temporizadores` (`net6.0`,
       importa `Juego.props`) declara `MelonInfo` y
       `MelonGame("ColdBrew Entertainment", "Disfigure")`, y escribe una línea con
       `MelonLogger` al iniciar. `dotnet build -p:Desplegar=true` copia el DLL a `Mods\`
       dentro de `RutaJuego`; sin esa propiedad no copia nada. Escribe la parte de
       despliegue del README.
-      *Hecho cuando:* al abrir el juego, `Latest.log` dice `1 Mods loaded` y muestra la línea
+      *Hecho cuando:* al abrir el juego, `Latest.log` dice `1 Mod loaded.` y muestra la línea
       del mod. Si no aparece, revisar primero si lo bloqueó Smart App Control.
 - [ ] **3. Diagnóstico: el mod registra los campos de los dos escudos.** Mientras haya un
       `PlayerStats` en la escena, escribe una línea por segundo con
