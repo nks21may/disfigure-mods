@@ -48,7 +48,7 @@ internal sealed class IconosEnPantalla
                     continue;
                 }
 
-                var imagen = ImagenDe(fila.Timer.Poder);
+                var imagen = ImagenDe(fila.Indicador.Poder);
                 if (imagen.sprite != fila.Sprite)
                 {
                     imagen.sprite = fila.Sprite;
@@ -59,8 +59,8 @@ internal sealed class IconosEnPantalla
                 rect.anchoredPosition = new Vector2(
                     -(Screen.width - fila.Icono.Derecha),
                     -fila.Icono.Y);
-                Prender(fila.Timer.Poder, imagen, true);
-                conIcono.Add(fila.Timer.Poder);
+                Prender(fila.Indicador.Poder, imagen, true);
+                conIcono.Add(fila.Indicador.Poder);
             }
 
             foreach (var (poder, imagen) in imagenes)

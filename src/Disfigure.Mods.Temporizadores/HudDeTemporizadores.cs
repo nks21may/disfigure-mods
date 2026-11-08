@@ -14,15 +14,16 @@ internal readonly record struct Caja(float X, float Y, float Ancho, float Alto)
 }
 
 /// <summary>
-/// Una fila del HUD en este frame: el timer, su sprite si lo hay, y dónde van el icono y el
-/// texto.
+/// Una fila del HUD en este frame: el indicador, su sprite si lo hay, y dónde van el icono y
+/// el texto.
 /// </summary>
-internal sealed record Fila(TimerEnPantalla Timer, Sprite? Sprite, Caja Icono, Caja Texto);
+internal sealed record Fila(Indicador Indicador, Sprite? Sprite, Caja Icono, Caja Texto);
 
 /// <summary>
-/// Los timers de los dos escudos, arriba a la derecha y debajo de la puntuación. Lee el
-/// juego, arma las filas una sola vez por frame, y de ahí salen el icono (Unity UI,
-/// ADR-0007) y el texto (IMGUI, ADR-0005). Es una clase común y no un
+/// Los indicadores de los escudos, arriba a la derecha y debajo de la puntuación: cuánto
+/// falta para que vuelvan la Shield Barrier y la Projectile Barrier, y cuántas kills lleva la
+/// Shield Flare. Lee el juego, arma las filas una sola vez por frame, y de ahí salen el icono
+/// (Unity UI, ADR-0007) y el texto (IMGUI, ADR-0005). Es una clase común y no un
 /// <c>MonoBehaviour</c>, así Il2CppInterop no intenta registrar sus métodos en IL2CPP.
 /// </summary>
 internal sealed class HudDeTemporizadores
@@ -33,14 +34,16 @@ internal sealed class HudDeTemporizadores
     private const float Margen = 24f;
     private const float TamanoDeIcono = 40f;
     private const float Separacion = 8f;
-    private const float AnchoDelTiempo = 90f;
+    private const float AnchoDelValor = 120f;
     private const float AnchoConNombre = 360f;
     private const float AltoDeLinea = 48f;
     private const float TamanoDeLetra = 26f;
 
     private readonly ManualLogSource registro;
-    private readonly TimerEnPantalla barrera = new("Shield Barrier");
-    private readonly TimerEnPantalla proyectiles = new("Projectile Barrier");
+    private readonly Indicador barrera = new("Shield Barrier");
+    private readonly Indicador proyectiles = new("Projectile Barrier");
+    private readonly Indicador flare = new("Shield Flare");
+    private readonly Indicador[] indicadores;
     private readonly IconosDePoderes sprites;
     private readonly IconosEnPantalla iconos;
     private List<Fila> filas = new();
@@ -48,6 +51,7 @@ internal sealed class HudDeTemporizadores
     internal HudDeTemporizadores(ManualLogSource registro)
     {
         this.registro = registro;
+        indicadores = new[] { barrera, proyectiles, flare };
         sprites = new IconosDePoderes(registro);
         iconos = new IconosEnPantalla(registro);
     }
@@ -59,43 +63,51 @@ internal sealed class HudDeTemporizadores
         var armas = refs == null ? null : refs.weaponManager;
         var hayPartida = stats != null && armas != null;
 
-        var cambioBarrera = barrera.Actualizar(
-            hayPartida ? Escudos.FaltaBarrera(stats!, armas!) : null);
-        if (cambioBarrera != Cambio.Ninguno)
-        {
-            var valores = hayPartida
-                ? string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"timer={stats!.shieldBarrierTimer:F2} "
-                    + $"cooldown={stats.shieldBarrierCooldown:F2} "
-                    + $"activa={armas!.shieldBarrierActive}")
-                : "sin partida";
-            Avisar(barrera, cambioBarrera, valores);
-        }
+        var faltaBarrera = hayPartida ? Escudos.FaltaBarrera(stats!, armas!) : null;
+        Actualizar(barrera, faltaBarrera is { } fb ? FormatoDeTiempo.Formatear(fb) : null, () =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"timer={stats!.shieldBarrierTimer:F2} "
+                + $"cooldown={stats.shieldBarrierCooldown:F2} "
+                + $"activa={armas!.shieldBarrierActive}"));
 
-        var cambioProyectiles = proyectiles.Actualizar(
-            hayPartida ? Escudos.FaltaProyectiles(stats!, armas!) : null);
-        if (cambioProyectiles != Cambio.Ninguno)
-        {
-            var valores = hayPartida
-                ? string.Create(
-                    CultureInfo.InvariantCulture,
-                    $"timer={armas!.projectileShieldRechargeTimer:F2} "
-                    + $"duracion={armas.ProjectileShieldRechargeDuration:F2} "
-                    + $"activo={armas.projectileShieldIsActive}")
-                : "sin partida";
-            Avisar(proyectiles, cambioProyectiles, valores);
-        }
+        var faltaProyectiles = hayPartida ? Escudos.FaltaProyectiles(stats!, armas!) : null;
+        Actualizar(proyectiles, faltaProyectiles is { } fp ? FormatoDeTiempo.Formatear(fp) : null, () =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"timer={armas!.projectileShieldRechargeTimer:F2} "
+                + $"duracion={armas.ProjectileShieldRechargeDuration:F2} "
+                + $"activo={armas.projectileShieldIsActive}"));
 
-        var enPantalla = new[] { barrera, proyectiles }.Where(timer => timer.Tiempo is not null);
+        var killsFlare = hayPartida ? Escudos.KillsDeShieldFlare(stats!, armas!) : null;
+        Actualizar(
+            flare,
+            killsFlare is { } kf
+                ? string.Create(CultureInfo.InvariantCulture, $"{kf}/{Escudos.KillsParaShieldFlare}")
+                : null,
+            () => string.Create(
+                CultureInfo.InvariantCulture,
+                $"kills={armas!.shieldActiveKills} desbloqueada={stats!.shieldFlare} "
+                + $"activa={armas.shieldFlareActive} barrera={armas.shieldBarrierActive}"));
+
+        var enPantalla = indicadores.Where(indicador => indicador.Texto is not null).ToList();
         if (iconos.Disponibles)
         {
-            // Sólo se buscan los sprites de los timers que se están mostrando.
-            sprites.BuscarFaltantes(enPantalla.Select(timer => timer.Poder));
+            // Sólo se buscan los sprites de los indicadores que se están mostrando.
+            sprites.BuscarFaltantes(enPantalla.Select(indicador => indicador.Poder));
         }
 
         filas = ArmarFilas(enPantalla);
         iconos.Mostrar(filas);
+
+        void Actualizar(Indicador indicador, string? texto, Func<string> valores)
+        {
+            var cambio = indicador.Actualizar(texto);
+            if (cambio != Cambio.Ninguno)
+            {
+                Avisar(indicador, cambio, hayPartida ? valores() : "sin partida");
+            }
+        }
     }
 
     internal void Dibujar()
@@ -103,34 +115,34 @@ internal sealed class HudDeTemporizadores
         foreach (var fila in filas)
         {
             var texto = fila.Sprite == null
-                ? $"{fila.Timer.Poder}  {fila.Timer.Tiempo}"
-                : fila.Timer.Tiempo!;
+                ? $"{fila.Indicador.Poder}  {fila.Indicador.Texto}"
+                : fila.Indicador.Texto!;
             DibujarTexto(texto, fila.Texto);
         }
     }
 
-    private List<Fila> ArmarFilas(IEnumerable<TimerEnPantalla> enPantalla)
+    private List<Fila> ArmarFilas(IEnumerable<Indicador> enPantalla)
     {
         var escala = Screen.height / AltoDeReferencia;
         var y = Screen.height * AlturaRelativa;
         var resultado = new List<Fila>();
 
-        foreach (var timer in enPantalla)
+        foreach (var indicador in enPantalla)
         {
-            var sprite = iconos.Disponibles ? sprites.Buscar(timer.Poder) : null;
+            var sprite = iconos.Disponibles ? sprites.Buscar(indicador.Poder) : null;
             var altoDeFila = AltoDeLinea * escala;
             var lado = TamanoDeIcono * escala;
-            var xDelTiempo = Screen.width - (Margen + AnchoDelTiempo) * escala;
-            var icono = new Caja(xDelTiempo - Separacion * escala - lado, y, lado, lado);
+            var xDelValor = Screen.width - (Margen + AnchoDelValor) * escala;
+            var icono = new Caja(xDelValor - Separacion * escala - lado, y, lado, lado);
             var texto = sprite == null
                 ? new Caja(
                     Screen.width - (Margen + AnchoConNombre) * escala,
                     y,
                     AnchoConNombre * escala,
                     altoDeFila)
-                : new Caja(xDelTiempo, y, AnchoDelTiempo * escala, altoDeFila);
+                : new Caja(xDelValor, y, AnchoDelValor * escala, altoDeFila);
 
-            resultado.Add(new Fila(timer, sprite, icono, texto));
+            resultado.Add(new Fila(indicador, sprite, icono, texto));
             y += altoDeFila;
         }
 
@@ -138,13 +150,13 @@ internal sealed class HudDeTemporizadores
     }
 
     /// <summary>
-    /// Deja en <c>BepInEx\LogOutput.log</c> cuándo aparece y desaparece cada timer, con los
-    /// valores del juego en ese momento, para poder verificar en qué valor vuelve cada escudo.
+    /// Deja en <c>BepInEx\LogOutput.log</c> cuándo aparece y desaparece cada indicador, con los
+    /// valores del juego en ese momento, para poder verificar en qué valor se va cada uno.
     /// </summary>
-    private void Avisar(TimerEnPantalla timer, Cambio cambio, string valores)
+    private void Avisar(Indicador indicador, Cambio cambio, string valores)
     {
-        var que = cambio == Cambio.Aparecio ? $"aparece en {timer.Tiempo}" : "desaparece";
-        registro.LogInfo($"{timer.Poder}: {que} ({valores})");
+        var que = cambio == Cambio.Aparecio ? $"aparece en {indicador.Texto}" : "desaparece";
+        registro.LogInfo($"{indicador.Poder}: {que} ({valores})");
     }
 
     /// <summary>

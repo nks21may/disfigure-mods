@@ -158,6 +158,52 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       Shield Barrier `shieldbarrierv2`; se crearon el `Canvas` y un `Image` por poder. Sin
       crashes en Windows desde que arrancó la sesión (22:20 a 22:26). No se registró si hubo
       alt+tab.
+- [x] **8. Diagnóstico: la pasiva de los escudos que se carga matando enemigos.** A pedido
+      del usuario: los escudos tienen una pasiva que se carga matando enemigos y activa un
+      buff, y quiere verla en el HUD mientras esté desbloqueada y no activa. Candidatos en el
+      código: `PlayerStats.shieldBoost`, `PlayerStats.shieldBoostMult`,
+      `WeaponManager.shieldBoostI`, `WeaponManager.shieldActiveKills`,
+      `PlayerStats.shieldFlare` y `WeaponManager.shieldFlareActive` (las cartas `SHIELD BOOST`
+      y `SHIELD FLARE` existen). `DiagnosticoDePasiva` escribe una vez las cartas con `SHIELD`
+      en el nombre, con su descripción, y una línea cada vez que cambia alguno de esos campos.
+      *Hecho cuando:* jugando con la pasiva, queda anotado acá qué carta es, qué campo dice
+      que está desbloqueada, cuál cuenta las kills, con cuántas se activa, cuánto dura el
+      buff y qué campo dice que está activo.
+      **Necesita al usuario con el juego abierto.**
+
+      **Resultado (partida del 2026-11-08, hasta las 00:09):** las cartas dicen:
+      - `SHIELD FLARE`: "100 kills while Shield Barrier is active temporarily increases
+        Vision Size by 50%".
+      - `SHIELD BOOST`: "Killing every 50 enemies while Shield Barrier is active temporarily
+        increases all Weapon Stats by 5% (Stacks up to +25%)".
+
+      Lo que muestra el log:
+      - `WeaponManager.shieldActiveKills` cuenta las kills mientras la Shield Barrier está
+        activa y **vuelve a 0 cuando la rompen**. Lo usan las dos cartas.
+      - **Shield Flare:** `PlayerStats.shieldFlare` pasa a `True` al agarrar la carta.
+        `WeaponManager.shieldFlareActive` se prende cuando las kills llegan a 100 (la segunda
+        vez, justo en 100) y se apaga cuando rompen la barrera. El 100 no está en ningún
+        campo: sale de la carta.
+      - **Shield Boost:** `PlayerStats.shieldBoost` pasa a `True` al agarrarla.
+        `WeaponManager.shieldBoostI` es la próxima meta (50, 100, 150…): al llegar,
+        `PlayerStats.shieldBoostMult` sube 0.05, hasta 1.25. Cuando rompen la barrera,
+        `shieldBoostMult` vuelve a 1.00, pero `shieldBoostI` se queda donde estaba (300). Con
+        la barrera de nuevo activa, las kills pasaron de 300 (llegaron a 1655) y el
+        multiplicador no volvió a subir: parece un bug del juego.
+      - La pasiva que se carga para activar un buff es la **Shield Flare**.
+- [x] **9. Las kills de la Shield Flare en el HUD.** Mientras la Shield Flare está
+      desbloqueada (`PlayerStats.shieldFlare`) y sin activar (`WeaponManager.shieldFlareActive`),
+      una fila más muestra su icono y `kills/100` (`WeaponManager.shieldActiveKills`, tope 100).
+      Las filas pasan a ser `Indicador`, que muestra cualquier texto, y el diagnóstico del
+      paso 8 se saca.
+      *Hecho cuando:* en una partida con la Shield Flare, la fila aparece con su icono, cuenta
+      las kills, desaparece al llegar a 100 y vuelve en `0/100` cuando rompen la barrera.
+      **Necesita al usuario con el juego abierto.**
+
+      **Resultado (partida del 2026-11-08, hasta las 02:03, v0.6.0):** el usuario vio el
+      contador funcionar. En `LogOutput.log`, la Shield Flare aparece en `0/100` con el
+      sprite `shieldflarev2`, desaparece con `kills=101 activa=True barrera=True` y vuelve en
+      `0/100` cuando se rompe la barrera. Sin crashes en Windows desde las 00:15.
 
 ---
 
@@ -165,6 +211,9 @@ Cómo cuenta cada uno está en el resultado del paso 3.
 
 Ideas que todavía no son pasos: falta una decisión o un dato.
 
+- **La Shield Boost en el HUD** (`+X%` y las kills que faltan para el próximo +5%). Hay que
+  decidir qué mostrar después de que rompen la barrera: el juego deja `shieldBoostI` en la
+  meta vieja y el multiplicador no vuelve a subir (paso 8). Cuando el usuario la pida.
 - **Más timers en el HUD**, como el dash (`PlayerStats.dashRechargeTimer`), el parry
   (`WeaponManager.parryRechargeTimer`) o la invulnerabilidad
   (`WeaponManager.invulnerabilityTimer`), definidos en una sola lista. Cuando los escudos

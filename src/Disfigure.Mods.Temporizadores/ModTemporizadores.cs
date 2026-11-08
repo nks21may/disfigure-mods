@@ -6,10 +6,10 @@ namespace Disfigure.Mods.Temporizadores;
 
 /// <summary>
 /// Plugin de BepInEx (ADR-0006): muestra en el HUD de la partida cuánto falta para que
-/// vuelvan los dos escudos después de que los rompen. El trabajo de cada frame lo hace
-/// <see cref="ComportamientoTemporizadores"/>.
+/// vuelvan los dos escudos después de que los rompen, y las kills de la Shield Flare. El
+/// trabajo de cada frame lo hace <see cref="ComportamientoTemporizadores"/>.
 /// </summary>
-[BepInPlugin(Identificador, "Temporizadores", "0.5.0")]
+[BepInPlugin(Identificador, "Temporizadores", "0.6.0")]
 public sealed class ModTemporizadores : BasePlugin
 {
     public const string Identificador = "dalessandro.disfigure.temporizadores";
