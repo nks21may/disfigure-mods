@@ -204,6 +204,27 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       contador funcionar. En `LogOutput.log`, la Shield Flare aparece en `0/100` con el
       sprite `shieldflarev2`, desaparece con `kills=101 activa=True barrera=True` y vuelve en
       `0/100` cuando se rompe la barrera. Sin crashes en Windows desde las 00:15.
+- [x] **10. Prender y apagar cada indicador desde el `.cfg` y desde un panel con F7.** A
+      pedido del usuario, antes de sumar indicadores de otras habilidades stackeables.
+      `Configuracion` guarda un `bool` por indicador en `[Indicadores]` de
+      `BepInEx\config\dalessandro.disfigure.temporizadores.cfg`; `PanelDeOpciones` abre con
+      F7 un panel con un botón por indicador, y las teclas 1 a 9 hacen lo mismo. Además,
+      `CartasQueStackean` escribe una vez en el log las cartas cuya descripción dice
+      "stack", para elegir los próximos indicadores. Ver
+      [ADR-0008](adr/0008-config-y-panel-con-f7.md).
+      *Hecho cuando:* el `.cfg` aparece con las tres entradas; en el juego, F7 abre el panel,
+      apagar un indicador lo saca del HUD y queda guardado en el `.cfg` después de reiniciar;
+      y el log tiene la lista de cartas que stackean.
+      **Necesita al usuario con el juego abierto.**
+
+      **Resultado (2026-11-08, hasta las 02:26, v0.7.0):** el usuario dice que anda, aunque
+      "se ve un poco feo". El `.cfg` se creó con `ShieldBarrier`, `ProjectileBarrier` y
+      `ShieldFlare` en `true`. En `LogOutput.log`: `Panel abierto.`, `Shield Barrier:
+      apagado.` y enseguida `Shield Barrier: desaparece`, después `Shield Barrier: prendido.`
+      y `Shield Barrier: aparece en 2:59`. Sin crashes desde las 02:10. **Sin verificar:**
+      que un indicador apagado siga apagado al reiniciar; el usuario lo volvió a prender
+      antes de cerrar. El log también trae las 48 cartas (de 498) cuya descripción dice
+      "stack".
 
 ---
 
@@ -214,6 +235,11 @@ Ideas que todavía no son pasos: falta una decisión o un dato.
 - **La Shield Boost en el HUD** (`+X%` y las kills que faltan para el próximo +5%). Hay que
   decidir qué mostrar después de que rompen la barrera: el juego deja `shieldBoostI` en la
   meta vieja y el multiplicador no vuelve a subir (paso 8). Cuando el usuario la pida.
+- **Un panel de F7 más lindo**, con Unity UI en lugar de IMGUI básico. El usuario dijo
+  que el actual "se ve un poco feo pero funciona". Pide un ADR que reemplace la parte del
+  panel de ADR-0008.
+- **Indicadores de otras habilidades que stackean** (paso 10 tiene la lista): cada una con
+  su diagnóstico, como la Shield Flare. Cuando el usuario elija cuáles.
 - **Más timers en el HUD**, como el dash (`PlayerStats.dashRechargeTimer`), el parry
   (`WeaponManager.parryRechargeTimer`) o la invulnerabilidad
   (`WeaponManager.invulnerabilityTimer`), definidos en una sola lista. Cuando los escudos

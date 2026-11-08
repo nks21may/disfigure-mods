@@ -15,6 +15,7 @@ Plantilla: [0000-plantilla.md](0000-plantilla.md).
 | [0005](0005-timers-con-imgui.md) | Los timers del HUD se dibujan con IMGUI desde el `OnGUI` de MelonLoader | aceptado; con 0006, el `OnGUI` es de un `MonoBehaviour` propio |
 | [0006](0006-bepinex-6-en-lugar-de-melonloader.md) | BepInEx 6 (be.785) en lugar de MelonLoader | aceptado |
 | [0007](0007-iconos-con-unity-ui.md) | Los iconos se dibujan con un `Image` de Unity UI; el texto sigue con IMGUI | aceptado |
+| [0008](0008-config-y-panel-con-f7.md) | Cada indicador se prende y apaga desde el `.cfg` de BepInEx y desde un panel con F7 | aceptado |
 
 ## Cuándo escribir uno
 

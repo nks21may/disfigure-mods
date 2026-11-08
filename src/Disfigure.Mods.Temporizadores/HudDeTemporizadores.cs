@@ -28,6 +28,14 @@ internal sealed record Fila(Indicador Indicador, Sprite? Sprite, Caja Icono, Caj
 /// </summary>
 internal sealed class HudDeTemporizadores
 {
+    internal const string ShieldBarrier = "Shield Barrier";
+    internal const string ProjectileBarrier = "Projectile Barrier";
+    internal const string ShieldFlare = "Shield Flare";
+
+    /// <summary>Los poderes con indicador, en el orden del HUD, del panel y del <c>.cfg</c>.</summary>
+    internal static readonly IReadOnlyList<string> Poderes =
+        new[] { ShieldBarrier, ProjectileBarrier, ShieldFlare };
+
     // Medidas pensadas para 1080 de alto; se escalan con la resolución.
     private const float AltoDeReferencia = 1080f;
     private const float AlturaRelativa = 0.40f;
@@ -40,17 +48,19 @@ internal sealed class HudDeTemporizadores
     private const float TamanoDeLetra = 26f;
 
     private readonly ManualLogSource registro;
-    private readonly Indicador barrera = new("Shield Barrier");
-    private readonly Indicador proyectiles = new("Projectile Barrier");
-    private readonly Indicador flare = new("Shield Flare");
+    private readonly Configuracion configuracion;
+    private readonly Indicador barrera = new(ShieldBarrier);
+    private readonly Indicador proyectiles = new(ProjectileBarrier);
+    private readonly Indicador flare = new(ShieldFlare);
     private readonly Indicador[] indicadores;
     private readonly IconosDePoderes sprites;
     private readonly IconosEnPantalla iconos;
     private List<Fila> filas = new();
 
-    internal HudDeTemporizadores(ManualLogSource registro)
+    internal HudDeTemporizadores(ManualLogSource registro, Configuracion configuracion)
     {
         this.registro = registro;
+        this.configuracion = configuracion;
         indicadores = new[] { barrera, proyectiles, flare };
         sprites = new IconosDePoderes(registro);
         iconos = new IconosEnPantalla(registro);
@@ -102,7 +112,9 @@ internal sealed class HudDeTemporizadores
 
         void Actualizar(Indicador indicador, string? texto, Func<string> valores)
         {
-            var cambio = indicador.Actualizar(texto);
+            // Un indicador apagado en el .cfg o en el panel no se muestra (ADR-0008).
+            var cambio = indicador.Actualizar(
+                configuracion.EstaPrendido(indicador.Poder) ? texto : null);
             if (cambio != Cambio.Ninguno)
             {
                 Avisar(indicador, cambio, hayPartida ? valores() : "sin partida");
