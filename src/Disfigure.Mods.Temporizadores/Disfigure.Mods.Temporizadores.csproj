@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Juego.props" />
+
+  <PropertyGroup>
+    <!-- El runtime en el que MelonLoader 0.7.3 carga los mods (ADR-0001). -->
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Disfigure.Mods.Temporizadores</RootNamespace>
+  </PropertyGroup>
+
+</Project>

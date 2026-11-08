@@ -24,7 +24,7 @@ rompen. El juego guarda esos tiempos pero no los muestra. Son dos escudos, y van
 Los nombres no dicen si los timers cuentan para arriba o para abajo: eso lo responde el
 paso 3.
 
-- [ ] **1. Las referencias al juego.** Un `Juego.props` define `RutaJuego` (por defecto
+- [x] **1. Las referencias al juego.** Un `Juego.props` define `RutaJuego` (por defecto
       `J:\SteamLibrary\steamapps\common\Disfigure`, que se pisa con la variable de entorno
       `DISFIGURE_RUTA_JUEGO`) y referencia `MelonLoader.dll`, `0Harmony.dll`,
       `Il2CppInterop.Runtime.dll` y los `Il2CppAssemblies` con `Private=false`. Si falta
