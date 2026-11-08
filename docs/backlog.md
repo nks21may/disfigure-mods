@@ -15,14 +15,14 @@ Los pasos citan símbolos por nombre, nunca por línea.
 El HUD de la partida muestra cuánto falta para que vuelva cada escudo después de que lo
 rompen. El juego guarda esos tiempos pero no los muestra. Son dos escudos, y van los dos:
 
-- **la barrera:** `PlayerStats.shieldBarrierCooldown`, `PlayerStats.shieldBarrierTimer` y
-  `WeaponManager.shieldBarrierActive`;
-- **el escudo de proyectiles:** `WeaponManager.projectileShieldRechargeTimer`,
+- **Shield Barrier (la barrera):** `PlayerStats.shieldBarrierCooldown`,
+  `PlayerStats.shieldBarrierTimer` y `WeaponManager.shieldBarrierActive`;
+- **Projectile Barrier (el escudo de proyectiles):**
+  `WeaponManager.projectileShieldRechargeTimer`,
   `WeaponManager.ProjectileShieldRechargeDuration` y
   `WeaponManager.projectileShieldIsActive`.
 
-Los nombres no dicen si los timers cuentan para arriba o para abajo: eso lo responde el
-paso 3.
+Cómo cuenta cada uno está en el resultado del paso 3.
 
 - [x] **1. Las referencias al juego.** Un `Juego.props` define `RutaJuego` (por defecto
       `J:\SteamLibrary\steamapps\common\Disfigure`, que se pisa con la variable de entorno
@@ -40,7 +40,7 @@ paso 3.
       despliegue del README.
       *Hecho cuando:* al abrir el juego, `Latest.log` dice `1 Mod loaded.` y muestra la línea
       del mod. Si no aparece, revisar primero si lo bloqueó Smart App Control.
-- [ ] **3. Diagnóstico: el mod registra los campos de los dos escudos.** Mientras haya un
+- [x] **3. Diagnóstico: el mod registra los campos de los dos escudos.** Mientras haya un
       `PlayerStats` en la escena, escribe una línea por segundo con
       `PlayerStats.shieldBarrierCooldown`, `PlayerStats.shieldBarrierTimer`,
       `PlayerStats.projectileShield`, `WeaponManager.shieldBarrierActive`,
@@ -52,11 +52,38 @@ paso 3.
       los suyos, si el timer cuenta para arriba o para abajo y contra qué valor. El usuario
       dice también cómo se llaman los dos poderes en el juego.
       **Necesita al usuario con el juego abierto.**
+
+      **Resultado (partida del 2026-11-07, 21:12 a 21:18):**
+
+      - **Shield Barrier** (la barrera; según su descripción, tarda 3 minutos en volver).
+        `PlayerStats.shieldBarrierCooldown` vale 0 hasta tener el poder y 180 desde que se
+        agarra. `PlayerStats.shieldBarrierTimer` **cuenta para arriba**: arranca en 0 al
+        agarrarlo, vuelve a 0 cuando lo rompen (`WeaponManager.shieldBarrierActive` pasa a
+        `False`) y sigue subiendo. Falta = `shieldBarrierCooldown − shieldBarrierTimer`,
+        mientras `shieldBarrierActive` sea `False`.
+      - **Projectile Barrier** (el escudo de proyectiles; según su descripción, tarda 2
+        minutos en reactivarse). `PlayerStats.projectileShield` pasa a `True` al agarrarlo.
+        `WeaponManager.projectileShieldRechargeTimer` **cuenta para abajo**: queda en 0
+        mientras está activo y, cuando lo rompen (`WeaponManager.projectileShieldIsActive`
+        pasa a `False`), salta a `WeaponManager.ProjectileShieldRechargeDuration` (120) y
+        baja. Falta = `projectileShieldRechargeTimer`, mientras `projectileShieldIsActive`
+        sea `False`. `PlayerStats.ProjectileShieldRechargeDuration` queda en 0: no es el
+        campo que usa.
+      - Los dos timers son tiempo de juego: se frenan cuando el juego está en pausa (por
+        ejemplo, en las pantallas de subir de nivel).
+      - **No se llegó a ver la vuelta de ninguno de los dos:** el juego se cerró a las
+        21:18:40, con la barrera en 119.59 de 180 y el de proyectiles en 116.31. Que vuelvan
+        con la barrera en 180 y el de proyectiles en 0 se verifica en el paso 4.
+      - En los últimos 4 segundos, el timer de proyectiles se quedó en 116.31 mientras el de
+        la barrera seguía subiendo. No sabemos por qué; si se repite en el paso 4, hay que
+        mirarlo.
 - [ ] **4. Los timers de los dos escudos en el HUD.** Antes del código, un ADR sobre cómo se
       dibuja: IMGUI (`OnGUI` de MelonLoader; el juego ya lo usa en algunos scripts) o Unity
       UI con TextMeshPro, como `ToggleStatusHud` del juego. Cada timer se muestra como
       `m:ss`, redondeado para arriba (así nunca dice `0:00` mientras falta algo), y
-      desaparece cuando su escudo está listo. *Depende del paso 3.*
+      desaparece cuando su escudo está listo. Lo que falta sale de las cuentas del
+      resultado del paso 3. Saca el registro de una línea por segundo del paso 3.
+      *Depende del paso 3.*
       *Hecho cuando:* en una partida, al romperse cada escudo aparece su timer, baja hasta
       que el escudo vuelve y desaparece.
       **Necesita al usuario con el juego abierto.**
