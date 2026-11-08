@@ -2,7 +2,8 @@
 
 - **Estado:** aceptado (decidido por el usuario el 2026-11-07). Con
   [ADR-0006](0006-bepinex-6-en-lugar-de-melonloader.md), `OnGUI` es de un `MonoBehaviour`
-  propio que el plugin agrega a la escena; lo demás sigue igual.
+  propio que el plugin agrega a la escena; lo demás sigue igual. Las imágenes las dibuja
+  Unity UI desde [ADR-0007](0007-iconos-con-unity-ui.md).
 - **Fecha:** 2026-11-07
 - **Decide:** con qué se dibujan en pantalla los timers que agrega el mod
 

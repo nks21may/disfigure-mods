@@ -11,7 +11,19 @@ Stack: C# con `net6.0` y el .NET SDK 10 fijado en `global.json`. No habla con ot
 ## Mods
 
 - **Temporizadores:** muestra en el HUD, arriba a la derecha, cuánto falta para que
-  vuelvan la Shield Barrier y la Projectile Barrier después de que te las rompen.
+  vuelvan la Shield Barrier y la Projectile Barrier después de que te las rompen, con el
+  icono de cada poder.
+
+## Herramientas
+
+- `herramientas/metodos-nativos.ps1`: dice si un método de Unity está en el build del juego
+  o si Il2CppInterop lo reconstruyó. Un método reconstruido puede crashear el juego; hay que
+  revisarlo antes de usar un método que el mod no usaba (ver
+  [ADR-0007](docs/adr/0007-iconos-con-unity-ui.md)).
+
+  ```powershell
+  herramientas/metodos-nativos.ps1 J:\SteamLibrary\steamapps\common\Disfigure\BepInEx\interop\UnityEngine.IMGUIModule.dll GUI Label,DrawTextureWithTexCoords
+  ```
 
 ## Requisitos
 

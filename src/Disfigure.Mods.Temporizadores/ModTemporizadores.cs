@@ -9,7 +9,7 @@ namespace Disfigure.Mods.Temporizadores;
 /// vuelvan los dos escudos después de que los rompen. El trabajo de cada frame lo hace
 /// <see cref="ComportamientoTemporizadores"/>.
 /// </summary>
-[BepInPlugin(Identificador, "Temporizadores", "0.4.1")]
+[BepInPlugin(Identificador, "Temporizadores", "0.5.0")]
 public sealed class ModTemporizadores : BasePlugin
 {
     public const string Identificador = "dalessandro.disfigure.temporizadores";

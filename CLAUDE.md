@@ -57,6 +57,12 @@ No reportes un paso como hecho en base a tu lectura del diff: compila, y si toca
 se probó en el juego. Cuidado con los pipes: `comando | tail` devuelve el exit code de
 `tail` y te oculta el error.
 
+**Antes de usar un método de Unity que el mod no usaba, revisá que exista en el build del
+juego:** `herramientas/metodos-nativos.ps1 <dll del interop> <tipo> <métodos>` dice si
+tiene `NativeMethodInfoPtr_*` (`NATIVO`) o si Il2CppInterop lo reconstruyó (`RECONSTRUIDO`).
+Un método reconstruido puede crashear el juego sin excepción: así pasó con
+`GUI.DrawTextureWithTexCoords` (ADR-0005, ADR-0007).
+
 Smart App Control está activado en esta máquina y se decidió ignorarlo (ADR-0004): puede
 bloquear el DLL de un mod. Si un mod no aparece en `BepInEx\LogOutput.log`, buscá el evento
 3077 en `Microsoft-Windows-CodeIntegrity/Operational` antes de buscar el error en el código.

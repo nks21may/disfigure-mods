@@ -143,6 +143,21 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       todavía no llegó al log. El aviso de Il2CppInterop por un método de
       `ComportamientoTemporizadores` con parámetros no soportados desapareció al pasar la
       lógica a `HudDeTemporizadores`, una clase común.
+- [x] **7. Los iconos de los poderes, con Unity UI.** Un `Canvas` propio con un `Image` por
+      poder, con el sprite de su carta (`Upgrade.authoritativeUpgradeCardIconSprite`), a la
+      izquierda del tiempo; el texto sigue con IMGUI. Si no hay sprite, queda el nombre. Todos
+      los métodos de Unity que usa son nativos en el build del juego
+      (`herramientas/metodos-nativos.ps1`). Ver
+      [ADR-0007](adr/0007-iconos-con-unity-ui.md).
+      *Hecho cuando:* en una partida, cada timer aparece arriba a la derecha con el icono de
+      su poder, el log dice qué sprite usó, y el juego no crashea (tampoco con alt+tab).
+      **Necesita al usuario con el juego abierto.**
+
+      **Resultado (2026-11-07, v0.5.0):** el usuario vio los dos iconos al lado de los
+      timers. En `LogOutput.log`: la Projectile Barrier usa el sprite `projectileshield` y la
+      Shield Barrier `shieldbarrierv2`; se crearon el `Canvas` y un `Image` por poder. Sin
+      crashes en Windows desde que arrancó la sesión (22:20 a 22:26). No se registró si hubo
+      alt+tab.
 
 ---
 
@@ -154,10 +169,6 @@ Ideas que todavía no son pasos: falta una decisión o un dato.
   (`WeaponManager.parryRechargeTimer`) o la invulnerabilidad
   (`WeaponManager.invulnerabilityTimer`), definidos en una sola lista. Cuando los escudos
   funcionen de punta a punta, y el usuario elija cuáles.
-- **Los iconos de los poderes en lugar del nombre**, dibujados con Unity UI (un `Canvas`
-  propio con un `Image` por timer, con `Upgrade.authoritativeUpgradeCardIconSprite`), porque
-  con IMGUI crashean el juego. Antes, un ADR que reemplace a ADR-0005 para el dibujo. Hay que
-  tener en cuenta que el sprite de la carta se carga recién cuando el juego muestra la carta.
 - **`Disfigure.Comun` en `BepInEx\plugins\`**, con el código compartido entre mods. Recién
   cuando un segundo mod repita código del primero (ADR-0003).
 - **Proponerle el mod al autor de Disfigure-Mod-Manager** para que lo sume a su
