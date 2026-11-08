@@ -1,6 +1,6 @@
 <Project>
   <!--
-    Referencias al juego y a MelonLoader, tomadas de la instalación local (ADR-0003).
+    Referencias al juego y a BepInEx 6, tomadas de la instalación local (ADR-0003, ADR-0006).
     Ningún DLL de acá se copia a la salida (Private=false) ni entra al repo.
 
     La ruta del juego se pisa con la variable de entorno DISFIGURE_RUTA_JUEGO, o con
@@ -10,16 +10,17 @@
     <RutaJuego Condition="'$(RutaJuego)' == '' and '$(DISFIGURE_RUTA_JUEGO)' != ''">$(DISFIGURE_RUTA_JUEGO)</RutaJuego>
     <RutaJuego Condition="'$(RutaJuego)' == ''">J:\SteamLibrary\steamapps\common\Disfigure</RutaJuego>
     <RutaJuego>$([MSBuild]::EnsureTrailingSlash('$(RutaJuego)'))</RutaJuego>
-    <RutaMelonLoader>$(RutaJuego)MelonLoader\</RutaMelonLoader>
-    <RutaIl2CppAssemblies>$(RutaMelonLoader)Il2CppAssemblies\</RutaIl2CppAssemblies>
+    <RutaBepInEx>$(RutaJuego)BepInEx\</RutaBepInEx>
+    <RutaInterop>$(RutaBepInEx)interop\</RutaInterop>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="$(RutaMelonLoader)net6\MelonLoader.dll" Private="false" />
-    <Reference Include="$(RutaMelonLoader)net6\0Harmony.dll" Private="false" />
-    <Reference Include="$(RutaMelonLoader)net6\Il2CppInterop.Runtime.dll" Private="false" />
-    <Reference Include="$(RutaMelonLoader)net6\Il2CppInterop.Common.dll" Private="false" />
-    <Reference Include="$(RutaIl2CppAssemblies)*.dll" Private="false" />
+    <Reference Include="$(RutaBepInEx)core\BepInEx.Core.dll" Private="false" />
+    <Reference Include="$(RutaBepInEx)core\BepInEx.Unity.IL2CPP.dll" Private="false" />
+    <Reference Include="$(RutaBepInEx)core\0Harmony.dll" Private="false" />
+    <Reference Include="$(RutaBepInEx)core\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="$(RutaBepInEx)core\Il2CppInterop.Common.dll" Private="false" />
+    <Reference Include="$(RutaInterop)*.dll" Private="false" />
   </ItemGroup>
 
   <!--
@@ -27,16 +28,16 @@
     buscó. Este chequeo corta antes y dice qué hacer.
   -->
   <Target Name="VerificarRutaJuego" BeforeTargets="ResolveAssemblyReferences">
-    <Error Condition="!Exists('$(RutaIl2CppAssemblies)Assembly-CSharp.dll')"
-           Text="No encontré el juego con MelonLoader: falta $(RutaIl2CppAssemblies)Assembly-CSharp.dll. Abrí Disfigure una vez con MelonLoader instalado para que lo genere, o apuntá la variable de entorno DISFIGURE_RUTA_JUEGO a la carpeta del juego." />
+    <Error Condition="!Exists('$(RutaInterop)Assembly-CSharp.dll')"
+           Text="No encontré el juego con BepInEx: falta $(RutaInterop)Assembly-CSharp.dll. Abrí Disfigure una vez con BepInEx 6 instalado para que lo genere, o apuntá la variable de entorno DISFIGURE_RUTA_JUEGO a la carpeta del juego." />
   </Target>
 
   <!--
-    Con -p:Desplegar=true, el DLL del mod se copia a la carpeta Mods del juego. Sin esa
-    propiedad, el build no toca la instalación del juego.
+    Con -p:Desplegar=true, el DLL del mod se copia a BepInEx\plugins\<mod>\ del juego. Sin
+    esa propiedad, el build no toca la instalación del juego.
   -->
   <Target Name="Desplegar" AfterTargets="Build" Condition="'$(Desplegar)' == 'true'">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RutaJuego)Mods\" />
-    <Message Importance="high" Text="Desplegado: $(TargetFileName) -> $(RutaJuego)Mods\" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(RutaBepInEx)plugins\$(AssemblyName)\" />
+    <Message Importance="high" Text="Desplegado: $(TargetFileName) -> $(RutaBepInEx)plugins\$(AssemblyName)\" />
   </Target>
 </Project>

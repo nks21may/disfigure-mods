@@ -4,8 +4,11 @@
 
 Mods para **Disfigure** (ColdBrew Entertainment), un roguelike de disparos con vista
 cenital hecho en Unity 6000.3.16f1 con IL2CPP, que no tiene soporte oficial de mods. Los
-mods se cargan con **MelonLoader 0.7.3**, que genera los assemblies interop del juego en
-la instalación local (`J:\SteamLibrary\steamapps\common\Disfigure\MelonLoader\Il2CppAssemblies`).
+mods son plugins de **BepInEx 6.0.0-be.785** (Unity IL2CPP, win-x64), la misma build que usa
+la comunidad a través de
+[Disfigure-Mod-Manager](https://github.com/Purpledudr/Disfigure-Mod-Manager). BepInEx genera
+los assemblies interop del juego en la instalación local
+(`J:\SteamLibrary\steamapps\common\Disfigure\BepInEx\interop`).
 
 Stack: C# con `net6.0` y el .NET SDK 10 fijado en `global.json`. No habla con otros repos.
 
@@ -16,15 +19,17 @@ todo lo que parece una decisión abierta ya está decidido y con motivo.
 
 Cada una tiene un ADR detrás.
 
-1. **Lo que se carga en el juego apunta a `net6.0`, y el lint vive en el build** (los
-   analizadores y el formato son errores). MelonLoader 0.7.3 carga los mods en .NET 6.
-   [ADR-0001](docs/adr/0001-melonloader-net6-y-gate-en-el-host.md)
-2. **Un proyecto por mod, y lo compartido va a `UserLibs\`.** Las referencias al juego y a
-   MelonLoader salen de la instalación local con `Private=false`: ningún DLL del juego ni
-   de MelonLoader entra al repo. [ADR-0003](docs/adr/0003-un-proyecto-por-mod.md)
+1. **Los mods son plugins de BepInEx 6 be.785 (`BasePlugin`), apuntan a `net6.0`, y el lint
+   vive en el build** (los analizadores y el formato son errores). `Update` y `OnGUI` van en
+   un `MonoBehaviour` propio que el plugin agrega con `AddComponent<T>()`.
+   [ADR-0001](docs/adr/0001-melonloader-net6-y-gate-en-el-host.md),
+   [ADR-0006](docs/adr/0006-bepinex-6-en-lugar-de-melonloader.md)
+2. **Un proyecto por mod, desplegado en `BepInEx\plugins\<mod>\`.** Las referencias al juego
+   y a BepInEx salen de la instalación local con `Private=false`: ningún DLL del juego ni de
+   BepInEx entra al repo. [ADR-0003](docs/adr/0003-un-proyecto-por-mod.md)
 3. **No hay gate ni tests: un paso está hecho cuando `dotnet build DisfigureMods.slnx`
    da exit 0 y, si se ve en el juego, se lo vio funcionar.** El commit de ese paso lleva las
-   líneas de `MelonLoader\Latest.log` que lo muestran.
+   líneas de `BepInEx\LogOutput.log` que lo muestran.
    [ADR-0004](docs/adr/0004-sin-gate-se-prueba-en-el-juego.md)
 
 ## Convenciones
@@ -34,7 +39,8 @@ Cada una tiene un ADR detrás.
 - Los identificadores no llevan tildes ni `ñ` (`TamanoBytes`, no `TamañoBytes`);
   los comentarios y la documentación XML sí, con ortografía correcta.
 - Los tipos y miembros del juego quedan como los nombró el desarrollador
-  (`Il2Cpp.PlayerStats.maxHealth`): son del juego, no nuestros.
+  (`PlayerStats.maxHealth`): son del juego, no nuestros. Con BepInEx están en el namespace
+  global, sin el prefijo `Il2Cpp.` que agregaba MelonLoader.
 - El lint y el formato los corre el build, así que no hay que acordarse: un hallazgo no
   compila.
 
@@ -52,13 +58,14 @@ se probó en el juego. Cuidado con los pipes: `comando | tail` devuelve el exit 
 `tail` y te oculta el error.
 
 Smart App Control está activado en esta máquina y se decidió ignorarlo (ADR-0004): puede
-bloquear el DLL de un mod. Si un mod no aparece en `Latest.log`, buscá el evento 3077 en
-`Microsoft-Windows-CodeIntegrity/Operational` antes de buscar el error en el código.
+bloquear el DLL de un mod. Si un mod no aparece en `BepInEx\LogOutput.log`, buscá el evento
+3077 en `Microsoft-Windows-CodeIntegrity/Operational` antes de buscar el error en el código.
 
 ## De dónde salen las decisiones
 
-De la instalación local del juego y del primer arranque de MelonLoader, el 2026-11-07.
-La versión de Unity sale de `UnityPlayer.dll`; la de la metadata, del encabezado de
-`Disfigure_Data\il2cpp_data\Metadata\global-metadata.dat`; lo que hace MelonLoader, de
-`J:\SteamLibrary\steamapps\common\Disfigure\MelonLoader\Latest.log`. No hay un sistema
-anterior ni repos hermanos.
+De la instalación local del juego y de los primeros arranques con MelonLoader y con
+BepInEx, el 2026-11-07. La versión de Unity sale de `UnityPlayer.dll`; la de la metadata,
+del encabezado de `Disfigure_Data\il2cpp_data\Metadata\global-metadata.dat`; lo que hace el
+loader, de `J:\SteamLibrary\steamapps\common\Disfigure\BepInEx\LogOutput.log`. MelonLoader
+quedó respaldado en `J:\SteamLibrary\Disfigure-MelonLoader-respaldo-2026-11-07`. No hay un
+sistema anterior ni repos hermanos.

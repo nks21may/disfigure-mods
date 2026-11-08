@@ -1,8 +1,9 @@
 # ADR-0001 — MelonLoader 0.7.3, `net6.0` para lo que carga el juego y el gate en el host con el lint en el build
 
 - **Estado:** aceptado (el usuario eligió MelonLoader y el gate en el host el 2026-11-07);
-  la parte del gate la reemplaza [ADR-0004](0004-sin-gate-se-prueba-en-el-juego.md). Siguen
-  vigentes MelonLoader, `net6.0` y el lint en el build.
+  la parte del gate la reemplaza [ADR-0004](0004-sin-gate-se-prueba-en-el-juego.md) y la de
+  MelonLoader, [ADR-0006](0006-bepinex-6-en-lugar-de-melonloader.md). Siguen vigentes
+  `net6.0` y el lint en el build.
 - **Fecha:** 2026-11-07
 - **Decide:** con qué se cargan los mods, para qué runtime se compilan y qué comando dice
   que algo está hecho

@@ -3,8 +3,13 @@
 Los pasos que faltan, en orden. Un paso a la vez y un commit por paso.
 
 Un paso está hecho cuando `dotnet build DisfigureMods.slnx` da exit 0 y, si se ve en el
-juego, se lo vio funcionar; el commit lleva las líneas de `MelonLoader\Latest.log` que lo
+juego, se lo vio funcionar; el commit lleva las líneas de `BepInEx\LogOutput.log` que lo
 muestran ([ADR-0004](adr/0004-sin-gate-se-prueba-en-el-juego.md)).
+
+Los pasos 1 a 4 se hicieron con MelonLoader; el paso 6 pasa el mod a BepInEx 6
+([ADR-0006](adr/0006-bepinex-6-en-lugar-de-melonloader.md)). Los nombres de los tipos del
+juego que citan esos pasos llevan el prefijo `Il2Cpp.` de MelonLoader solo en el código de
+entonces: con BepInEx están en el namespace global.
 
 Los pasos citan símbolos por nombre, nunca por línea.
 
@@ -94,15 +99,50 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       `timer=120.00 cooldown=120.00`. A mitad de la partida el cooldown de la barrera bajó de
       180 a 120, seguramente por una mejora de enfriamiento: el mod lo siguió porque lee
       `shieldBarrierCooldown` en cada frame.
-- [ ] **5. El icono del poder en lugar del nombre, arriba a la derecha.** A pedido del
+- [x] **5. El icono del poder en lugar del nombre, arriba a la derecha.** A pedido del
       usuario, para que no se superponga con el resto del HUD: los timers van contra el
       borde derecho, a 2/5 de la altura de la pantalla (debajo de la puntuación), y cada uno
       muestra el icono de la carta de su poder (`Upgrade.authoritativeUpgradeCardIconSprite`,
       buscado por `Upgrade.upgradeName`) en lugar del nombre. Si no encuentra el icono,
       deja el nombre. Las medidas se escalan con el alto de la pantalla.
       *Hecho cuando:* en una partida, cada timer aparece arriba a la derecha con el icono de
-      su poder, y `Latest.log` muestra qué sprite usó para cada uno.
+      su poder, y el log muestra qué sprite usó para cada uno. Se verifica junto con el
+      paso 6, ya con BepInEx.
       **Necesita al usuario con el juego abierto.**
+
+      **Lo que se vio con MelonLoader (2026-11-07, 21:43 a 21:48):** el juego carga 470
+      cartas, con nombres en mayúsculas (`SHIELD BARRIER`, `PROJECTILE BARRIER`); la búsqueda
+      no distingue mayúsculas. El icono de la Projectile Barrier apareció recién a los dos
+      minutos (sprite `projectileshield`), y el de la Shield Barrier no apareció: parece que
+      `authoritativeUpgradeCardIconSprite` se llena cuando el juego muestra la carta. La
+      sesión terminó en un crash al hacer alt+tab (`d3d12: Device failed error (887a0007)`,
+      en `Player-prev.log`), antes de que el usuario viera los timers.
+
+      **Con BepInEx (22:09):** el juego crasheó en el mismo segundo en que apareció el timer
+      de la Projectile Barrier con su icono (`0xc0000005` en `dotnet\coreclr.dll`). Los
+      iconos se sacan: `GUI.DrawTextureWithTexCoords` crashea el juego (nota en ADR-0005).
+      **El paso 5 queda en la posición nueva con el nombre del poder, sin iconos** (v0.4.1).
+      Los iconos pasan a "Después", con Unity UI.
+- [x] **6. El mod pasa a ser un plugin de BepInEx 6 be.785.** MelonLoader se saca del juego
+      (queda respaldado en `J:\SteamLibrary\Disfigure-MelonLoader-respaldo-2026-11-07`) y se
+      instala BepInEx 6.0.0-be.785, Unity IL2CPP, win-x64. `Juego.props` referencia
+      `BepInEx\core` y `BepInEx\interop` y despliega en `BepInEx\plugins\<mod>\`.
+      `ModTemporizadores` es un `BasePlugin` que agrega `ComportamientoTemporizadores`, el
+      `MonoBehaviour` con `Update` y `OnGUI`. La lógica de los escudos, el formato y los
+      iconos no cambia. Ver [ADR-0006](adr/0006-bepinex-6-en-lugar-de-melonloader.md).
+      *Hecho cuando:* `BepInEx\LogOutput.log` lista el plugin y dice `Temporizadores
+      cargado.`, y en una partida los timers de los dos escudos aparecen y desaparecen como
+      con MelonLoader.
+      **Necesita al usuario con el juego abierto.**
+
+      **Resultado (2026-11-07, desde las 22:13, v0.4.1):** el usuario confirmó que los timers
+      andan bien arriba a la derecha y que el juego no crasheó. En `LogOutput.log`, al
+      momento del commit: `Loading [Temporizadores 0.4.1]`, `Temporizadores cargado.` y
+      `Shield Barrier: aparece en 3:00 (timer=0.00 cooldown=180.00 activa=False)`. Que el
+      timer desaparezca cuando vuelve el escudo se vio con MelonLoader (paso 4); con BepInEx
+      todavía no llegó al log. El aviso de Il2CppInterop por un método de
+      `ComportamientoTemporizadores` con parámetros no soportados desapareció al pasar la
+      lógica a `HudDeTemporizadores`, una clase común.
 
 ---
 
@@ -114,5 +154,12 @@ Ideas que todavía no son pasos: falta una decisión o un dato.
   (`WeaponManager.parryRechargeTimer`) o la invulnerabilidad
   (`WeaponManager.invulnerabilityTimer`), definidos en una sola lista. Cuando los escudos
   funcionen de punta a punta, y el usuario elija cuáles.
-- **`Disfigure.Comun` en `UserLibs\`**, con el código compartido entre mods. Recién cuando un
-  segundo mod repita código del primero (ADR-0003).
+- **Los iconos de los poderes en lugar del nombre**, dibujados con Unity UI (un `Canvas`
+  propio con un `Image` por timer, con `Upgrade.authoritativeUpgradeCardIconSprite`), porque
+  con IMGUI crashean el juego. Antes, un ADR que reemplace a ADR-0005 para el dibujo. Hay que
+  tener en cuenta que el sprite de la carta se carga recién cuando el juego muestra la carta.
+- **`Disfigure.Comun` en `BepInEx\plugins\`**, con el código compartido entre mods. Recién
+  cuando un segundo mod repita código del primero (ADR-0003).
+- **Proponerle el mod al autor de Disfigure-Mod-Manager** para que lo sume a su
+  `plugins.json`. Cuando el mod esté verificado con BepInEx, y si el usuario quiere
+  publicarlo.

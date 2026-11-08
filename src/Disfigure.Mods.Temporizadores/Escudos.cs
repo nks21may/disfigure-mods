@@ -1,5 +1,3 @@
-using Il2Cpp;
-
 namespace Disfigure.Mods.Temporizadores;
 
 /// <summary>
