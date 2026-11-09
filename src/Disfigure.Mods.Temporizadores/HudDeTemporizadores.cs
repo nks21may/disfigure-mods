@@ -31,10 +31,17 @@ internal sealed class HudDeTemporizadores
     internal const string ShieldBarrier = "Shield Barrier";
     internal const string ProjectileBarrier = "Projectile Barrier";
     internal const string ShieldFlare = "Shield Flare";
+    internal const string KillSpree = "Kill Spree";
+    internal const string RapidFire = "Rapid Fire";
+    internal const string RicochetRebound = "Ricochet Rebound";
+    internal const string MagneticRounds = "Magnetic Rounds";
 
     /// <summary>Los poderes con indicador, en el orden del HUD, del panel y del <c>.cfg</c>.</summary>
-    internal static readonly IReadOnlyList<string> Poderes =
-        new[] { ShieldBarrier, ProjectileBarrier, ShieldFlare };
+    internal static readonly IReadOnlyList<string> Poderes = new[]
+    {
+        ShieldBarrier, ProjectileBarrier, ShieldFlare,
+        KillSpree, RapidFire, RicochetRebound, MagneticRounds,
+    };
 
     // Medidas pensadas para 1080 de alto; se escalan con la resolución.
     private const float AltoDeReferencia = 1080f;
@@ -42,7 +49,7 @@ internal sealed class HudDeTemporizadores
     private const float Margen = 24f;
     private const float TamanoDeIcono = 40f;
     private const float Separacion = 8f;
-    private const float AnchoDelValor = 120f;
+    private const float AnchoDelValor = 170f;
     private const float AnchoConNombre = 360f;
     private const float AltoDeLinea = 48f;
     private const float TamanoDeLetra = 26f;
@@ -52,16 +59,25 @@ internal sealed class HudDeTemporizadores
     private readonly Indicador barrera = new(ShieldBarrier);
     private readonly Indicador proyectiles = new(ProjectileBarrier);
     private readonly Indicador flare = new(ShieldFlare);
+    private readonly Indicador killSpree = new(KillSpree);
+    private readonly Indicador rapidFire = new(RapidFire);
+    private readonly Indicador ricochetRebound = new(RicochetRebound);
+    private readonly Indicador magneticRounds = new(MagneticRounds);
     private readonly Indicador[] indicadores;
     private readonly IconosDePoderes sprites;
     private readonly IconosEnPantalla iconos;
+    private readonly DiagnosticoDeStacks diagnostico;
     private List<Fila> filas = new();
 
     internal HudDeTemporizadores(ManualLogSource registro, Configuracion configuracion)
     {
         this.registro = registro;
         this.configuracion = configuracion;
-        indicadores = new[] { barrera, proyectiles, flare };
+        diagnostico = new DiagnosticoDeStacks(registro);
+        indicadores = new[]
+        {
+            barrera, proyectiles, flare, killSpree, rapidFire, ricochetRebound, magneticRounds,
+        };
         sprites = new IconosDePoderes(registro);
         iconos = new IconosEnPantalla(registro);
     }
@@ -72,6 +88,11 @@ internal sealed class HudDeTemporizadores
         var stats = refs == null ? null : refs.playerStats;
         var armas = refs == null ? null : refs.weaponManager;
         var hayPartida = stats != null && armas != null;
+
+        if (hayPartida)
+        {
+            diagnostico.Actualizar(stats!, armas!);
+        }
 
         var faltaBarrera = hayPartida ? Escudos.FaltaBarrera(stats!, armas!) : null;
         Actualizar(barrera, faltaBarrera is { } fb ? FormatoDeTiempo.Formatear(fb) : null, () =>
@@ -99,6 +120,21 @@ internal sealed class HudDeTemporizadores
                 CultureInfo.InvariantCulture,
                 $"kills={armas!.shieldActiveKills} desbloqueada={stats!.shieldFlare} "
                 + $"activa={armas.shieldFlareActive} barrera={armas.shieldBarrierActive}"));
+
+        Actualizar(killSpree, hayPartida ? Stacks.KillSpree(stats!) : null, () =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"buff={stats!.killSpreeBuff:F2} timer={stats.killSpreeTimer:F2}"));
+        Actualizar(rapidFire, hayPartida ? Stacks.RapidFire(stats!) : null, () =>
+            string.Create(CultureInfo.InvariantCulture, $"multiplicador={stats!.rapidFireMultiplier:F2}"));
+        Actualizar(ricochetRebound, hayPartida ? Stacks.RicochetRebound(stats!) : null, () =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"multiplicador={stats!.ricochetReboundMultiplier:F2}"));
+        Actualizar(magneticRounds, hayPartida ? Stacks.MagneticRounds(stats!, armas!) : null, () =>
+            string.Create(
+                CultureInfo.InvariantCulture,
+                $"multiplicador={armas!.magneticRoundMultiplier:F2}"));
 
         var enPantalla = indicadores.Where(indicador => indicador.Texto is not null).ToList();
         if (iconos.Disponibles)

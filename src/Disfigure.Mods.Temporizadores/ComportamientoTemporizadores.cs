@@ -4,7 +4,7 @@ namespace Disfigure.Mods.Temporizadores;
 
 /// <summary>
 /// El <c>MonoBehaviour</c> que el plugin agrega a la escena (ADR-0006). Sólo pasa
-/// <c>Update</c> y <c>OnGUI</c> al HUD, al panel de opciones y al diagnóstico de cartas:
+/// <c>Update</c> y <c>OnGUI</c> al HUD y al panel de opciones:
 /// Il2CppInterop registra en IL2CPP cada método de esta clase, así que cuantos menos tenga,
 /// mejor.
 /// </summary>
@@ -18,8 +18,6 @@ public sealed class ComportamientoTemporizadores : MonoBehaviour
         HudDeTemporizadores.Poderes,
         ModTemporizadores.Registro);
 
-    private readonly CartasQueStackean cartas = new(ModTemporizadores.Registro);
-
     /// <summary>Lo usa Il2CppInterop para crear la parte administrada del objeto.</summary>
     public ComportamientoTemporizadores(IntPtr puntero)
         : base(puntero)
@@ -30,7 +28,6 @@ public sealed class ComportamientoTemporizadores : MonoBehaviour
     {
         hud.Actualizar();
         panel.Actualizar();
-        cartas.Actualizar();
     }
 
     public void OnGUI()

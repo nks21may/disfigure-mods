@@ -225,6 +225,76 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       que un indicador apagado siga apagado al reiniciar; el usuario lo volvió a prender
       antes de cerrar. El log también trae las 48 cartas (de 498) cuya descripción dice
       "stack".
+- [ ] **11. Diagnóstico: las 17 cartas que stackean que eligió el usuario.** De las 48, el
+      usuario eligió tres grupos: las que se pierden si dejás de matar o pegar (Berserk, Kill
+      Spree, Rampage, Rapid Fire, Accelerating Barrel), las que duran unos segundos
+      (Overdrive, Fragment Surge, Ignition, Saw Burst, Radiant Missiles, Shrouded Frost) y las
+      que se cargan para el próximo disparo (Magnetic Rounds, Molten Rounds, One in the
+      Chamber, Ricochet Rebound, Plague, Psychic Fortification). `DiagnosticoDeStacks` lee los
+      campos candidatos por reflexión cada 0.1 s y escribe una línea cuando cambia el
+      desbloqueo o el valor de una carta, con el tiempo en ese momento. Además del log de
+      BepInEx, escribe en `BepInEx\Temporizadores-diagnostico.log`, que se acumula entre
+      arranques: las cartas salen al azar y hacen falta varias partidas. Saca
+      `CartasQueStackean`.
+
+      | Carta | Desbloqueo | Valor | Tiempo |
+      |---|---|---|---|
+      | Berserk | `berserk` | `berserkMultiplier` | `berserkTimer` |
+      | Kill Spree | `killSpree` | `killSpreeBuff` | `killSpreeTimer` |
+      | Rampage | `rampage` | `rampageMultiplier` | — |
+      | Rapid Fire | `rapidFire` | `rapidFireMultiplier` | — |
+      | Accelerating Barrel | `acceleratingBarrel` | `WM.acceleratingBarrelBuff` | `WM.acceleratingBarrelTimer` |
+      | Overdrive | `overdrive` | `overdriveMultiplier` | `overdriveTimer` |
+      | Fragment Surge | `splintersurge`? | `splintersurgeMultiplier` | `splintersurgeTimer` |
+      | Ignition | `ignition` | `ignitionFireRateBuff` | `ignitionTimer` |
+      | Saw Burst | `sawBurst` | `WM.sawBurstBuff` | `WM.sawBurstTimer` |
+      | Radiant Missiles | ninguno encontrado | `radiantMissilesMultiplier` | `radiantMissilesTimer` |
+      | Shrouded Frost | `concealedSpiral`? | `concealedSpiralBuff`, `concealedSpiralBuffLevel` | `concealedSpiralBuffTimer` |
+      | Magnetic Rounds | `magneticRounds` | `WM.magneticRoundMultiplier` | — |
+      | Molten Rounds | `moltenRounds` | `moltenRoundsDamageMultiplier` | — |
+      | One in the Chamber | `oneInTheChamber` | `oneInTheChamberMultiplier` | — |
+      | Ricochet Rebound | `ricochetRebound` | `ricochetReboundMultiplier` | — |
+      | Plague | `plague` | `plagueStackCount` | — |
+      | Psychic Fortification | `noxiousFortification`? | `WM.noxiousRemnantBuff` | — |
+
+      Sin prefijo, los campos son de `PlayerStats`; `WM.` es `WeaponManager`. Los que llevan
+      `?` tienen un nombre interno distinto del de la carta y son los más dudosos.
+      *Hecho cuando:* para cada carta que el usuario haya agarrado, queda anotado qué campo
+      la desbloquea, cómo sube el valor, cuánto dura y cuándo se reinicia. Las que no
+      salgan siguen en este paso hasta que salgan.
+      **Necesita al usuario jugando varias partidas.**
+
+      **Resultado parcial (tres arranques del 2026-11-08, 9549 líneas en
+      `Temporizadores-diagnostico.log`):** salieron 4 de las 17. Las 13 restantes no se
+      desbloquearon nunca, y el diagnóstico sigue con ellas.
+      - **Kill Spree:** `killSpree` la desbloquea. `killSpreeBuff` sube 0.05 por kill hasta
+        1.35. `killSpreeTimer` vuelve a casi 0 en cada kill y cuenta para arriba; cuando
+        llega a 3.00, el buff vuelve a 1.00 (la carta dice "Resets after 3 seconds without
+        killing"). Fuera de una partida vale 100.
+      - **Rapid Fire:** `rapidFire` la desbloquea. `rapidFireMultiplier` sube 0.15 hasta
+        **1.90** (la carta dice +75%) y vuelve a 1.00 entre 0.7 y 1.1 s después del último
+        aumento. No hay campo con ese tiempo.
+      - **Ricochet Rebound:** `ricochetRebound` la desbloquea. `ricochetReboundMultiplier`
+        sube 0.15 hasta **1.90** (la carta dice +75%) y vuelve a 1.00 con el próximo disparo.
+      - **Magnetic Rounds:** `magneticRounds` la desbloquea.
+        `WeaponManager.magneticRoundMultiplier` sube 0.05 por EXP juntada, llegó a 2.05, y
+        vuelve a 1.00 con cada disparo: cambió 7790 veces y volvió a 1.00 3236 veces.
+- [x] **12. Los indicadores de Kill Spree, Rapid Fire, Ricochet Rebound y Magnetic Rounds.**
+      Con lo que mostró el paso 11, `Stacks` arma el texto de cada uno: `+35% · 2.1s` para
+      Kill Spree (el bonus y lo que falta para que se reinicie) y `+90%` para las otras
+      tres. Se muestran mientras la carta está desbloqueada, también en `+0%`: los valores
+      cambian varias veces por segundo, y una fila que aparece y desaparece a ese ritmo no
+      se puede leer. Cada uno tiene su entrada en el `.cfg` y su botón en el panel de F7.
+      Las cuatro cartas salen del diagnóstico.
+      *Hecho cuando:* en una partida con alguna de las cuatro, su fila aparece con el icono
+      y el bonus sube y baja como en el juego.
+      **Necesita al usuario con el juego abierto.**
+
+      **Resultado (2026-11-09, v0.8.0):** el usuario dice que se ven bien. **Sin evidencia en
+      el log:** el último arranque, que es el que queda en `LogOutput.log` (hasta las
+      01:42), no tuvo ninguna partida (sólo `Temporizadores cargado.`), y BepInEx pisa el log
+      de los arranques anteriores. El `.cfg` tiene las cuatro entradas nuevas en `true`. Sin
+      crashes en Windows desde el 2026-11-09 a las 00:00.
 
 ---
 

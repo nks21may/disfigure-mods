@@ -10,10 +10,12 @@ namespace Disfigure.Mods.Temporizadores;
 /// indicador se prende y apaga desde el <c>.cfg</c> o desde el panel de F7 (ADR-0008). El
 /// trabajo de cada frame lo hace <see cref="ComportamientoTemporizadores"/>.
 /// </summary>
-[BepInPlugin(Identificador, "Temporizadores", "0.7.0")]
+[BepInPlugin(Identificador, "Temporizadores", Version)]
 public sealed class ModTemporizadores : BasePlugin
 {
     public const string Identificador = "dalessandro.disfigure.temporizadores";
+
+    public const string Version = "0.8.0";
 
     /// <summary>El log del plugin, para el comportamiento que vive en la escena.</summary>
     internal static ManualLogSource Registro { get; private set; } = null!;
