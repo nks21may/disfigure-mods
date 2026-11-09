@@ -12,8 +12,9 @@ Stack: C# con `net6.0` y el .NET SDK 10 fijado en `global.json`. No habla con ot
 
 - **Temporizadores:** muestra en el HUD, arriba a la derecha y con el icono de cada poder,
   cuánto falta para que vuelvan la Shield Barrier y la Projectile Barrier después de que te
-  las rompen, y cuántas kills lleva la Shield Flare (`37/100`) mientras está desbloqueada y
-  sin activar. Cada indicador se prende y apaga con **F7** en el juego (o con las teclas 1
+  las rompen, cuántas kills lleva la Shield Flare (`37/100`) mientras está desbloqueada y
+  sin activar, y el bonus de Kill Spree (`+35% · 2.1s`), Rapid Fire, Ricochet Rebound y
+  Magnetic Rounds mientras tengas la carta. Cada indicador se prende y apaga con **F7** en el juego (o con las teclas 1
   a 9 con el panel abierto), o en
   `BepInEx\config\dalessandro.disfigure.temporizadores.cfg`.
 
