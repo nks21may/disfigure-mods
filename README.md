@@ -46,6 +46,12 @@ e `IdentifiersModule`), y el juego arranca igual. Si un mod no aparece en
 `BepInEx\LogOutput.log`, puede ser eso: el bloqueo queda como evento 3077 en
 `Microsoft-Windows-CodeIntegrity/Operational`.
 
+El 2026-11-09 Smart App Control bloqueó **`GameAssembly.dll`, el DLL del propio juego**, y el
+juego no arrancaba ni sin mods ("Failed to load il2cpp"). El archivo no había cambiado. Se
+resolvió reiniciando la PC. Si vuelve a pasar: buscá el evento 3077 de `GameAssembly.dll`,
+y para descartar los mods poné `enabled = false` en `doorstop_config.ini` o sacá
+`winhttp.dll` de la carpeta del juego.
+
 ## Compilar
 
 ```bash

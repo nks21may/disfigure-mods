@@ -66,6 +66,9 @@ Un método reconstruido puede crashear el juego sin excepción: así pasó con
 Smart App Control está activado en esta máquina y se decidió ignorarlo (ADR-0004): puede
 bloquear el DLL de un mod. Si un mod no aparece en `BepInEx\LogOutput.log`, buscá el evento
 3077 en `Microsoft-Windows-CodeIntegrity/Operational` antes de buscar el error en el código.
+Si el juego entero no arranca ("Failed to load il2cpp") y `LogOutput.log` no se actualizó,
+mirá si el 3077 es de `GameAssembly.dll`: el 2026-11-09 pasó sin mods y se resolvió
+reiniciando la PC (README).
 
 ## De dónde salen las decisiones
 
