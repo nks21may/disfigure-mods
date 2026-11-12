@@ -1,0 +1,43 @@
+<Project>
+  <!--
+    References to the game and to BepInEx 6, taken from the local install (ADR-0003, ADR-0006).
+    None of these DLLs is copied to the output (Private=false) or committed to the repo.
+
+    The game path can be overridden with the DISFIGURE_GAME_PATH environment variable, or with
+    -p:GamePath=... on the command line.
+  -->
+  <PropertyGroup>
+    <GamePath Condition="'$(GamePath)' == '' and '$(DISFIGURE_GAME_PATH)' != ''">$(DISFIGURE_GAME_PATH)</GamePath>
+    <GamePath Condition="'$(GamePath)' == ''">J:\SteamLibrary\steamapps\common\Disfigure</GamePath>
+    <GamePath>$([MSBuild]::EnsureTrailingSlash('$(GamePath)'))</GamePath>
+    <BepInExPath>$(GamePath)BepInEx\</BepInExPath>
+    <InteropPath>$(BepInExPath)interop\</InteropPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="$(BepInExPath)core\BepInEx.Core.dll" Private="false" />
+    <Reference Include="$(BepInExPath)core\BepInEx.Unity.IL2CPP.dll" Private="false" />
+    <Reference Include="$(BepInExPath)core\0Harmony.dll" Private="false" />
+    <Reference Include="$(BepInExPath)core\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="$(BepInExPath)core\Il2CppInterop.Common.dll" Private="false" />
+    <Reference Include="$(InteropPath)*.dll" Private="false" />
+  </ItemGroup>
+
+  <!--
+    Without the game, the build would fail with errors about missing types and would not say
+    which path it looked at. This check stops earlier and says what to do.
+  -->
+  <Target Name="CheckGamePath" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(InteropPath)Assembly-CSharp.dll')"
+           Text="Could not find the game with BepInEx: $(InteropPath)Assembly-CSharp.dll is missing. Launch Disfigure once with BepInEx 6 installed so it generates it, or point the DISFIGURE_GAME_PATH environment variable to the game folder." />
+  </Target>
+
+  <!--
+    With -p:Deploy=true, the mod DLL is copied to BepInEx\plugins\<mod>\ in the game. Without
+    that property, the build does not touch the game install.
+  -->
+  <Target Name="Deploy" AfterTargets="Build" Condition="'$(Deploy)' == 'true'">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(BepInExPath)plugins\$(AssemblyName)\" />
+    <Message Importance="high" Text="Deployed: $(TargetFileName) -> $(BepInExPath)plugins\$(AssemblyName)\" />
+  </Target>
+</Project>

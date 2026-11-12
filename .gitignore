@@ -1,7 +1,10 @@
-# Salidas del build y de los tests.
+# Build and test output.
 bin/
 obj/
 TestResults/
+
+# Release packages built by tools/package.ps1.
+dist/
 
 # IDE.
 .vs/
@@ -9,11 +12,11 @@ TestResults/
 *.user
 *.suo
 
-# Configuración local que nunca entra.
+# Local settings that never get committed.
 .env
 .env.local
 
-# Los assemblies del juego no se versionan (ADR-0003): se referencian desde la
-# instalación local. Si alguno aparece copiado acá, es un error.
+# Game assemblies are never committed (ADR-0003): they are referenced from the local
+# install. If one shows up copied here, it is a mistake.
 Il2CppAssemblies/
 Assembly-CSharp.dll

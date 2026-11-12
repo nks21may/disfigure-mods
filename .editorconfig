@@ -15,14 +15,14 @@ indent_size = 2
 trim_trailing_whitespace = false
 
 [*.cs]
-# Estas reglas las verifica el build (EnforceCodeStyleInBuild en Directory.Build.props),
-# y con TreatWarningsAsErrors un hallazgo deja el gate en rojo (ADR-0001).
+# These rules are checked by the build (EnforceCodeStyleInBuild in Directory.Build.props),
+# and with TreatWarningsAsErrors a finding fails the build (ADR-0001).
 
-# Formato.
+# Formatting.
 dotnet_diagnostic.IDE0055.severity = warning
-# Usings sin usar.
+# Unused usings.
 dotnet_diagnostic.IDE0005.severity = warning
-# Namespaces de archivo, no de bloque.
+# File-scoped namespaces, not block-scoped.
 csharp_style_namespace_declarations = file_scoped:warning
 dotnet_diagnostic.IDE0161.severity = warning
 

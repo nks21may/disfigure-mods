@@ -1,5 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/Disfigure.Mods.Temporizadores/Disfigure.Mods.Temporizadores.csproj" />
+    <Project Path="src/Disfigure.Mods.BuffTracker/Disfigure.Mods.BuffTracker.csproj" />
   </Folder>
 </Solution>

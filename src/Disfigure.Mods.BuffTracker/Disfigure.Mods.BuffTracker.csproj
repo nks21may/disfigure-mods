@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Game.props" />
+
+  <PropertyGroup>
+    <!-- The runtime MelonLoader used and BepInEx 6 IL2CPP still uses for plugins (ADR-0001). -->
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Disfigure.Mods.BuffTracker</RootNamespace>
+    <!-- Keep in sync with BuffTrackerPlugin.Version: the mod manager reads it from the DLL. -->
+    <Version>1.0.0</Version>
+    <Product>Buff Tracker</Product>
+    <Authors>Nicolás D'Alessandro</Authors>
+  </PropertyGroup>
+
+</Project>

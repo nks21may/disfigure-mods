@@ -1,243 +1,232 @@
-# Backlog — Mods de Disfigure
+# Backlog — Disfigure mods
 
-Los pasos que faltan, en orden. Un paso a la vez y un commit por paso.
+The remaining steps, in order. One step at a time and one commit per step.
 
-Un paso está hecho cuando `dotnet build DisfigureMods.slnx` da exit 0 y, si se ve en el
-juego, se lo vio funcionar; el commit lleva las líneas de `BepInEx\LogOutput.log` que lo
-muestran ([ADR-0004](adr/0004-sin-gate-se-prueba-en-el-juego.md)).
+A step is done when `dotnet build DisfigureMods.slnx` exits 0 and, if it shows in the game,
+it was seen working; the commit carries the `BepInEx\LogOutput.log` lines that show it
+([ADR-0004](adr/0004-no-gate-test-in-the-game.md)).
 
-Los pasos 1 a 4 se hicieron con MelonLoader; el paso 6 pasa el mod a BepInEx 6
-([ADR-0006](adr/0006-bepinex-6-en-lugar-de-melonloader.md)). Los nombres de los tipos del
-juego que citan esos pasos llevan el prefijo `Il2Cpp.` de MelonLoader solo en el código de
-entonces: con BepInEx están en el namespace global.
+Steps 1 to 4 were done with MelonLoader; step 6 moved the mod to BepInEx 6
+([ADR-0006](adr/0006-bepinex-6-instead-of-melonloader.md)). Until step 13 the mod was called
+`Temporizadores` and the code was in Spanish; class, file and log names quoted in those
+steps are the ones from that time ([ADR-0009](adr/0009-english-and-buff-tracker-name.md)).
 
-Los pasos citan símbolos por nombre, nunca por línea.
+Steps quote symbols by name, never by line.
 
 ---
 
-## Timers de los escudos en el HUD
+## Shield timers on the HUD
 
-El HUD de la partida muestra cuánto falta para que vuelva cada escudo después de que lo
-rompen. El juego guarda esos tiempos pero no los muestra. Son dos escudos, y van los dos:
+The run HUD shows how long until each shield comes back after it breaks. The game stores
+those times but does not show them. There are two shields, and both are covered:
 
-- **Shield Barrier (la barrera):** `PlayerStats.shieldBarrierCooldown`,
-  `PlayerStats.shieldBarrierTimer` y `WeaponManager.shieldBarrierActive`;
-- **Projectile Barrier (el escudo de proyectiles):**
-  `WeaponManager.projectileShieldRechargeTimer`,
-  `WeaponManager.ProjectileShieldRechargeDuration` y
+- **Shield Barrier:** `PlayerStats.shieldBarrierCooldown`, `PlayerStats.shieldBarrierTimer`
+  and `WeaponManager.shieldBarrierActive`;
+- **Projectile Barrier:** `WeaponManager.projectileShieldRechargeTimer`,
+  `WeaponManager.ProjectileShieldRechargeDuration` and
   `WeaponManager.projectileShieldIsActive`.
 
-Cómo cuenta cada uno está en el resultado del paso 3.
+How each one counts is in the result of step 3.
 
-- [x] **1. Las referencias al juego.** Un `Juego.props` define `RutaJuego` (por defecto
-      `J:\SteamLibrary\steamapps\common\Disfigure`, que se pisa con la variable de entorno
-      `DISFIGURE_RUTA_JUEGO`) y referencia `MelonLoader.dll`, `0Harmony.dll`,
-      `Il2CppInterop.Runtime.dll` y los `Il2CppAssemblies` con `Private=false`. Si falta
-      `MelonLoader\Il2CppAssemblies\Assembly-CSharp.dll`, el build corta con un error que
-      dice qué ruta buscó y qué variable la pisa.
-      *Hecho cuando:* el proyecto del paso 2 compila contra el juego, y con
-      `DISFIGURE_RUTA_JUEGO` apuntando a una carpeta vacía el build muestra ese error.
-- [x] **2. El mod carga en el juego.** `src/Disfigure.Mods.Temporizadores` (`net6.0`,
-      importa `Juego.props`) declara `MelonInfo` y
-      `MelonGame("ColdBrew Entertainment", "Disfigure")`, y escribe una línea con
-      `MelonLogger` al iniciar. `dotnet build -p:Desplegar=true` copia el DLL a `Mods\`
-      dentro de `RutaJuego`; sin esa propiedad no copia nada. Escribe la parte de
-      despliegue del README.
-      *Hecho cuando:* al abrir el juego, `Latest.log` dice `1 Mod loaded.` y muestra la línea
-      del mod. Si no aparece, revisar primero si lo bloqueó Smart App Control.
-- [x] **3. Diagnóstico: el mod registra los campos de los dos escudos.** Mientras haya un
-      `PlayerStats` en la escena, escribe una línea por segundo con
+- [x] **1. Game references.** A props file defines the game path (default
+      `J:\SteamLibrary\steamapps\common\Disfigure`, overridable with an environment
+      variable) and references `MelonLoader.dll`, `0Harmony.dll`, `Il2CppInterop.Runtime.dll`
+      and the game interop assemblies with `Private=false`. If `Assembly-CSharp.dll` is
+      missing, the build stops with an error saying which path it looked at and which
+      variable overrides it.
+      *Done when:* the step 2 project builds against the game, and with the variable
+      pointing to an empty folder the build shows that error.
+- [x] **2. The mod loads in the game.** The mod project (`net6.0`, imports the props file)
+      declares `MelonInfo` and `MelonGame("ColdBrew Entertainment", "Disfigure")`, and logs a
+      line on start. A build property copies the DLL to the game's `Mods\`; without it,
+      nothing is copied. Writes the deployment part of the README.
+      *Done when:* on launch, `Latest.log` says `1 Mod loaded.` and shows the mod's line. If
+      it does not appear, check first whether Smart App Control blocked it.
+- [x] **3. Diagnostics: the mod logs the fields of both shields.** While there is a
+      `PlayerStats` in the scene, it writes one line per second with
       `PlayerStats.shieldBarrierCooldown`, `PlayerStats.shieldBarrierTimer`,
       `PlayerStats.projectileShield`, `WeaponManager.shieldBarrierActive`,
       `WeaponManager.projectileShieldRechargeTimer`,
       `WeaponManager.ProjectileShieldRechargeDuration`,
-      `WeaponManager.projectileShieldIsActive` y `WeaponManager.tempShieldHits`.
-      *Hecho cuando:* jugando con cada uno de los dos escudos, el usuario deja que se lo
-      rompan y espera a que vuelva, y queda anotado acá, para cada escudo, qué campos son
-      los suyos, si el timer cuenta para arriba o para abajo y contra qué valor. El usuario
-      dice también cómo se llaman los dos poderes en el juego.
-      **Necesita al usuario con el juego abierto.**
+      `WeaponManager.projectileShieldIsActive` and `WeaponManager.tempShieldHits`.
+      *Done when:* playing with each shield, the user lets it break and waits for it to come
+      back, and for each shield it is written down here which fields are its own, whether the
+      timer counts up or down and against which value. The user also says what the two powers
+      are called in the game.
+      **Needs the user with the game open.**
 
-      **Resultado (partida del 2026-11-07, 21:12 a 21:18):**
+      **Result (run on 2026-11-07, 21:12 to 21:18):**
 
-      - **Shield Barrier** (la barrera; según su descripción, tarda 3 minutos en volver).
-        `PlayerStats.shieldBarrierCooldown` vale 0 hasta tener el poder y 180 desde que se
-        agarra. `PlayerStats.shieldBarrierTimer` **cuenta para arriba**: arranca en 0 al
-        agarrarlo, vuelve a 0 cuando lo rompen (`WeaponManager.shieldBarrierActive` pasa a
-        `False`) y sigue subiendo. Falta = `shieldBarrierCooldown − shieldBarrierTimer`,
-        mientras `shieldBarrierActive` sea `False`.
-      - **Projectile Barrier** (el escudo de proyectiles; según su descripción, tarda 2
-        minutos en reactivarse). `PlayerStats.projectileShield` pasa a `True` al agarrarlo.
-        `WeaponManager.projectileShieldRechargeTimer` **cuenta para abajo**: queda en 0
-        mientras está activo y, cuando lo rompen (`WeaponManager.projectileShieldIsActive`
-        pasa a `False`), salta a `WeaponManager.ProjectileShieldRechargeDuration` (120) y
-        baja. Falta = `projectileShieldRechargeTimer`, mientras `projectileShieldIsActive`
-        sea `False`. `PlayerStats.ProjectileShieldRechargeDuration` queda en 0: no es el
-        campo que usa.
-      - Los dos timers son tiempo de juego: se frenan cuando el juego está en pausa (por
-        ejemplo, en las pantallas de subir de nivel).
-      - **No se llegó a ver la vuelta de ninguno de los dos:** el juego se cerró a las
-        21:18:40, con la barrera en 119.59 de 180 y el de proyectiles en 116.31. Que vuelvan
-        con la barrera en 180 y el de proyectiles en 0 se verifica en el paso 4.
-      - En los últimos 4 segundos, el timer de proyectiles se quedó en 116.31 mientras el de
-        la barrera seguía subiendo. No sabemos por qué; si se repite en el paso 4, hay que
-        mirarlo.
-- [x] **4. Los timers de los dos escudos en el HUD.** Antes del código, un ADR sobre cómo se
-      dibuja: IMGUI (`OnGUI` de MelonLoader; el juego ya lo usa en algunos scripts) o Unity
-      UI con TextMeshPro, como `ToggleStatusHud` del juego. Cada timer se muestra como
-      `m:ss`, redondeado para arriba (así nunca dice `0:00` mientras falta algo), y
-      desaparece cuando su escudo está listo. Lo que falta sale de las cuentas del
-      resultado del paso 3. Saca el registro de una línea por segundo del paso 3.
-      *Depende del paso 3.*
-      *Hecho cuando:* en una partida, al romperse cada escudo aparece su timer, baja hasta
-      que el escudo vuelve y desaparece.
-      **Necesita al usuario con el juego abierto.**
+      - **Shield Barrier** (by its description, it takes 3 minutes to come back).
+        `PlayerStats.shieldBarrierCooldown` is 0 until the power is owned and 180 after.
+        `PlayerStats.shieldBarrierTimer` **counts up**: it starts at 0 when picked, goes back
+        to 0 when it breaks (`WeaponManager.shieldBarrierActive` turns `False`) and keeps
+        rising. Remaining = `shieldBarrierCooldown − shieldBarrierTimer`, while
+        `shieldBarrierActive` is `False`.
+      - **Projectile Barrier** (by its description, it takes 2 minutes to reactivate).
+        `PlayerStats.projectileShield` turns `True` when picked.
+        `WeaponManager.projectileShieldRechargeTimer` **counts down**: it stays at 0 while
+        active and, when it breaks (`WeaponManager.projectileShieldIsActive` turns `False`),
+        jumps to `WeaponManager.ProjectileShieldRechargeDuration` (120) and goes down.
+        Remaining = `projectileShieldRechargeTimer`, while `projectileShieldIsActive` is
+        `False`. `PlayerStats.ProjectileShieldRechargeDuration` stays at 0: it is not the
+        field in use.
+      - Both timers are game time: they stop while the game is paused (for example, on the
+        level-up screens).
+      - **Neither return was seen:** the game closed at 21:18:40, with the barrier at 119.59
+        of 180 and the projectile shield at 116.31. Step 4 checks they come back at 180 and
+        at 0.
+      - In the last 4 seconds, the projectile timer stayed at 116.31 while the barrier kept
+        rising. Unknown why; to be looked at if it happens again in step 4.
+- [x] **4. Both shield timers on the HUD.** Before the code, an ADR about how they are
+      drawn: IMGUI (`OnGUI`; the game already uses it in some scripts) or Unity UI with
+      TextMeshPro, like the game's `ToggleStatusHud`. Each timer shows as `m:ss`, rounded up
+      (so it never says `0:00` while something is left), and disappears when its shield is
+      ready. The remaining time comes from the step 3 result. Removes the one-line-per-second
+      log from step 3.
+      *Depends on step 3.*
+      *Done when:* in a run, when each shield breaks its timer appears, goes down until the
+      shield comes back and disappears.
+      **Needs the user with the game open.**
 
-      **Resultado (partida del 2026-11-07, desde las 21:22):** el usuario vio los dos timers
-      funcionar. En `Latest.log`, la Projectile Barrier apareció en `2:00` y desapareció con
-      `timer=0.00 activo=True`; la Shield Barrier apareció en `3:00` y desapareció con
-      `timer=120.00 cooldown=120.00`. A mitad de la partida el cooldown de la barrera bajó de
-      180 a 120, seguramente por una mejora de enfriamiento: el mod lo siguió porque lee
-      `shieldBarrierCooldown` en cada frame.
-- [x] **5. El icono del poder en lugar del nombre, arriba a la derecha.** A pedido del
-      usuario, para que no se superponga con el resto del HUD: los timers van contra el
-      borde derecho, a 2/5 de la altura de la pantalla (debajo de la puntuación), y cada uno
-      muestra el icono de la carta de su poder (`Upgrade.authoritativeUpgradeCardIconSprite`,
-      buscado por `Upgrade.upgradeName`) en lugar del nombre. Si no encuentra el icono,
-      deja el nombre. Las medidas se escalan con el alto de la pantalla.
-      *Hecho cuando:* en una partida, cada timer aparece arriba a la derecha con el icono de
-      su poder, y el log muestra qué sprite usó para cada uno. Se verifica junto con el
-      paso 6, ya con BepInEx.
-      **Necesita al usuario con el juego abierto.**
+      **Result (run on 2026-11-07, from 21:22):** the user saw both timers work. In
+      `Latest.log`, the Projectile Barrier appeared at `2:00` and disappeared with
+      `timer=0.00 active=True`; the Shield Barrier appeared at `3:00` and disappeared with
+      `timer=120.00 cooldown=120.00`. Mid-run the barrier cooldown went from 180 to 120,
+      most likely from a cooldown upgrade: the mod followed it because it reads
+      `shieldBarrierCooldown` every frame.
+- [x] **5. The power icon instead of the name, at the top right.** Asked by the user, so it
+      does not overlap the rest of the HUD: the indicators go against the right edge, at 2/5
+      of the screen height (under the score), and each one shows its power's card icon
+      (`Upgrade.authoritativeUpgradeCardIconSprite`, looked up by `Upgrade.upgradeName`)
+      instead of the name. If the icon is not found, the name stays. Sizes scale with the
+      screen height.
+      *Done when:* in a run, each indicator appears at the top right with its power's icon,
+      and the log shows which sprite it used for each. Checked together with step 6, on
+      BepInEx.
+      **Needs the user with the game open.**
 
-      **Lo que se vio con MelonLoader (2026-11-07, 21:43 a 21:48):** el juego carga 470
-      cartas, con nombres en mayúsculas (`SHIELD BARRIER`, `PROJECTILE BARRIER`); la búsqueda
-      no distingue mayúsculas. El icono de la Projectile Barrier apareció recién a los dos
-      minutos (sprite `projectileshield`), y el de la Shield Barrier no apareció: parece que
-      `authoritativeUpgradeCardIconSprite` se llena cuando el juego muestra la carta. La
-      sesión terminó en un crash al hacer alt+tab (`d3d12: Device failed error (887a0007)`,
-      en `Player-prev.log`), antes de que el usuario viera los timers.
+      **What was seen with MelonLoader (2026-11-07, 21:43 to 21:48):** the game loads 470
+      cards, with upper-case names (`SHIELD BARRIER`, `PROJECTILE BARRIER`); the lookup is
+      case-insensitive. The Projectile Barrier icon only showed up after two minutes (sprite
+      `projectileshield`), and the Shield Barrier one never did: it looks like
+      `authoritativeUpgradeCardIconSprite` is filled when the game shows the card. The
+      session ended in a crash on alt+tab (`d3d12: Device failed error (887a0007)` in
+      `Player-prev.log`), before the user saw the indicators.
 
-      **Con BepInEx (22:09):** el juego crasheó en el mismo segundo en que apareció el timer
-      de la Projectile Barrier con su icono (`0xc0000005` en `dotnet\coreclr.dll`). Los
-      iconos se sacan: `GUI.DrawTextureWithTexCoords` crashea el juego (nota en ADR-0005).
-      **El paso 5 queda en la posición nueva con el nombre del poder, sin iconos** (v0.4.1).
-      Los iconos pasan a "Después", con Unity UI.
-- [x] **6. El mod pasa a ser un plugin de BepInEx 6 be.785.** MelonLoader se saca del juego
-      (queda respaldado en `J:\SteamLibrary\Disfigure-MelonLoader-respaldo-2026-11-07`) y se
-      instala BepInEx 6.0.0-be.785, Unity IL2CPP, win-x64. `Juego.props` referencia
-      `BepInEx\core` y `BepInEx\interop` y despliega en `BepInEx\plugins\<mod>\`.
-      `ModTemporizadores` es un `BasePlugin` que agrega `ComportamientoTemporizadores`, el
-      `MonoBehaviour` con `Update` y `OnGUI`. La lógica de los escudos, el formato y los
-      iconos no cambia. Ver [ADR-0006](adr/0006-bepinex-6-en-lugar-de-melonloader.md).
-      *Hecho cuando:* `BepInEx\LogOutput.log` lista el plugin y dice `Temporizadores
-      cargado.`, y en una partida los timers de los dos escudos aparecen y desaparecen como
-      con MelonLoader.
-      **Necesita al usuario con el juego abierto.**
+      **With BepInEx (22:09):** the game crashed in the same second the Projectile Barrier
+      timer with its icon appeared (`0xc0000005` in `dotnet\coreclr.dll`). Icons are removed:
+      `GUI.DrawTextureWithTexCoords` crashes the game (note in ADR-0005). **Step 5 stays at the
+      new position with the power name, without icons** (v0.4.1). Icons move to "Later", with
+      Unity UI.
+- [x] **6. The mod becomes a BepInEx 6 be.785 plugin.** MelonLoader is removed from the game
+      (backed up in `J:\SteamLibrary\Disfigure-MelonLoader-respaldo-2026-11-07`) and BepInEx
+      6.0.0-be.785, Unity IL2CPP, win-x64 is installed. The props file references
+      `BepInEx\core` and `BepInEx\interop` and deploys to `BepInEx\plugins\<mod>\`. The
+      plugin is a `BasePlugin` that adds an own `MonoBehaviour` with `Update` and `OnGUI`.
+      The shield logic, the formatting and the icons do not change. See
+      [ADR-0006](adr/0006-bepinex-6-instead-of-melonloader.md).
+      *Done when:* `BepInEx\LogOutput.log` lists the plugin and its load line, and in a run
+      the timers of both shields appear and disappear as with MelonLoader.
+      **Needs the user with the game open.**
 
-      **Resultado (2026-11-07, desde las 22:13, v0.4.1):** el usuario confirmó que los timers
-      andan bien arriba a la derecha y que el juego no crasheó. En `LogOutput.log`, al
-      momento del commit: `Loading [Temporizadores 0.4.1]`, `Temporizadores cargado.` y
-      `Shield Barrier: aparece en 3:00 (timer=0.00 cooldown=180.00 activa=False)`. Que el
-      timer desaparezca cuando vuelve el escudo se vio con MelonLoader (paso 4); con BepInEx
-      todavía no llegó al log. El aviso de Il2CppInterop por un método de
-      `ComportamientoTemporizadores` con parámetros no soportados desapareció al pasar la
-      lógica a `HudDeTemporizadores`, una clase común.
-- [x] **7. Los iconos de los poderes, con Unity UI.** Un `Canvas` propio con un `Image` por
-      poder, con el sprite de su carta (`Upgrade.authoritativeUpgradeCardIconSprite`), a la
-      izquierda del tiempo; el texto sigue con IMGUI. Si no hay sprite, queda el nombre. Todos
-      los métodos de Unity que usa son nativos en el build del juego
-      (`herramientas/metodos-nativos.ps1`). Ver
-      [ADR-0007](adr/0007-iconos-con-unity-ui.md).
-      *Hecho cuando:* en una partida, cada timer aparece arriba a la derecha con el icono de
-      su poder, el log dice qué sprite usó, y el juego no crashea (tampoco con alt+tab).
-      **Necesita al usuario con el juego abierto.**
+      **Result (2026-11-07, from 22:13, v0.4.1):** the user confirmed the timers work at the
+      top right and the game did not crash. In `LogOutput.log`, at commit time: the plugin
+      load line and `Shield Barrier: appears at 3:00 (timer=0.00 cooldown=180.00
+      active=False)`. The timer disappearing when the shield comes back was seen with
+      MelonLoader (step 4); with BepInEx it had not reached the log yet. The Il2CppInterop
+      warning about a behaviour method with unsupported parameters went away when the logic
+      moved to a plain class.
+- [x] **7. Power icons, with Unity UI.** An own `Canvas` with one `Image` per power, with its
+      card's sprite (`Upgrade.authoritativeUpgradeCardIconSprite`), to the left of the value;
+      text stays on IMGUI. Without a sprite, the name stays. Every Unity method it uses is
+      native in the game build (`tools/native-methods.ps1`). See
+      [ADR-0007](adr/0007-icons-with-unity-ui.md).
+      *Done when:* in a run, each indicator appears at the top right with its power's icon,
+      the log says which sprite it used, and the game does not crash (alt+tab included).
+      **Needs the user with the game open.**
 
-      **Resultado (2026-11-07, v0.5.0):** el usuario vio los dos iconos al lado de los
-      timers. En `LogOutput.log`: la Projectile Barrier usa el sprite `projectileshield` y la
-      Shield Barrier `shieldbarrierv2`; se crearon el `Canvas` y un `Image` por poder. Sin
-      crashes en Windows desde que arrancó la sesión (22:20 a 22:26). No se registró si hubo
-      alt+tab.
-- [x] **8. Diagnóstico: la pasiva de los escudos que se carga matando enemigos.** A pedido
-      del usuario: los escudos tienen una pasiva que se carga matando enemigos y activa un
-      buff, y quiere verla en el HUD mientras esté desbloqueada y no activa. Candidatos en el
-      código: `PlayerStats.shieldBoost`, `PlayerStats.shieldBoostMult`,
-      `WeaponManager.shieldBoostI`, `WeaponManager.shieldActiveKills`,
-      `PlayerStats.shieldFlare` y `WeaponManager.shieldFlareActive` (las cartas `SHIELD BOOST`
-      y `SHIELD FLARE` existen). `DiagnosticoDePasiva` escribe una vez las cartas con `SHIELD`
-      en el nombre, con su descripción, y una línea cada vez que cambia alguno de esos campos.
-      *Hecho cuando:* jugando con la pasiva, queda anotado acá qué carta es, qué campo dice
-      que está desbloqueada, cuál cuenta las kills, con cuántas se activa, cuánto dura el
-      buff y qué campo dice que está activo.
-      **Necesita al usuario con el juego abierto.**
+      **Result (2026-11-07, v0.5.0):** the user saw both icons next to the timers. In
+      `LogOutput.log`: the Projectile Barrier uses sprite `projectileshield` and the Shield
+      Barrier `shieldbarrierv2`; the `Canvas` and one `Image` per power were created. No
+      crashes in Windows since the session started (22:20 to 22:26). Whether there was an
+      alt+tab was not logged.
+- [x] **8. Diagnostics: the shield passive that charges by killing enemies.** Asked by the
+      user: the shields have a passive that charges by killing enemies and triggers a buff,
+      and they want it on the HUD while unlocked and not active. Candidates in the code:
+      `PlayerStats.shieldBoost`, `PlayerStats.shieldBoostMult`, `WeaponManager.shieldBoostI`,
+      `WeaponManager.shieldActiveKills`, `PlayerStats.shieldFlare` and
+      `WeaponManager.shieldFlareActive` (the `SHIELD BOOST` and `SHIELD FLARE` cards exist).
+      The diagnostics write the cards with `SHIELD` in their name once, with their
+      description, and one line every time one of those fields changes.
+      *Done when:* playing with the passive, it is written down here which card it is, which
+      field says it is unlocked, which one counts kills, how many trigger it, how long the
+      buff lasts and which field says it is active.
+      **Needs the user with the game open.**
 
-      **Resultado (partida del 2026-11-08, hasta las 00:09):** las cartas dicen:
+      **Result (run on 2026-11-08, until 00:09):** the cards say:
       - `SHIELD FLARE`: "100 kills while Shield Barrier is active temporarily increases
         Vision Size by 50%".
       - `SHIELD BOOST`: "Killing every 50 enemies while Shield Barrier is active temporarily
         increases all Weapon Stats by 5% (Stacks up to +25%)".
 
-      Lo que muestra el log:
-      - `WeaponManager.shieldActiveKills` cuenta las kills mientras la Shield Barrier está
-        activa y **vuelve a 0 cuando la rompen**. Lo usan las dos cartas.
-      - **Shield Flare:** `PlayerStats.shieldFlare` pasa a `True` al agarrar la carta.
-        `WeaponManager.shieldFlareActive` se prende cuando las kills llegan a 100 (la segunda
-        vez, justo en 100) y se apaga cuando rompen la barrera. El 100 no está en ningún
-        campo: sale de la carta.
-      - **Shield Boost:** `PlayerStats.shieldBoost` pasa a `True` al agarrarla.
-        `WeaponManager.shieldBoostI` es la próxima meta (50, 100, 150…): al llegar,
-        `PlayerStats.shieldBoostMult` sube 0.05, hasta 1.25. Cuando rompen la barrera,
-        `shieldBoostMult` vuelve a 1.00, pero `shieldBoostI` se queda donde estaba (300). Con
-        la barrera de nuevo activa, las kills pasaron de 300 (llegaron a 1655) y el
-        multiplicador no volvió a subir: parece un bug del juego.
-      - La pasiva que se carga para activar un buff es la **Shield Flare**.
-- [x] **9. Las kills de la Shield Flare en el HUD.** Mientras la Shield Flare está
-      desbloqueada (`PlayerStats.shieldFlare`) y sin activar (`WeaponManager.shieldFlareActive`),
-      una fila más muestra su icono y `kills/100` (`WeaponManager.shieldActiveKills`, tope 100).
-      Las filas pasan a ser `Indicador`, que muestra cualquier texto, y el diagnóstico del
-      paso 8 se saca.
-      *Hecho cuando:* en una partida con la Shield Flare, la fila aparece con su icono, cuenta
-      las kills, desaparece al llegar a 100 y vuelve en `0/100` cuando rompen la barrera.
-      **Necesita al usuario con el juego abierto.**
+      What the log shows:
+      - `WeaponManager.shieldActiveKills` counts kills while the Shield Barrier is active and
+        **goes back to 0 when it breaks**. Both cards use it.
+      - **Shield Flare:** `PlayerStats.shieldFlare` turns `True` when the card is picked.
+        `WeaponManager.shieldFlareActive` turns on when kills reach 100 (the second time,
+        exactly at 100) and off when the barrier breaks. The 100 is not in any field: it
+        comes from the card.
+      - **Shield Boost:** `PlayerStats.shieldBoost` turns `True` when picked.
+        `WeaponManager.shieldBoostI` is the next target (50, 100, 150…): when reached,
+        `PlayerStats.shieldBoostMult` goes up 0.05, up to 1.25. When the barrier breaks,
+        `shieldBoostMult` goes back to 1.00, but `shieldBoostI` stays where it was (300).
+        With the barrier active again, kills went past 300 (up to 1655) and the multiplier
+        did not go up again: it looks like a game bug.
+      - The passive that charges to trigger a buff is the **Shield Flare**.
+- [x] **9. Shield Flare kills on the HUD.** While the Shield Flare is unlocked
+      (`PlayerStats.shieldFlare`) and not active (`WeaponManager.shieldFlareActive`), one more
+      row shows its icon and `kills/100` (`WeaponManager.shieldActiveKills`, capped at 100).
+      Rows become a generic indicator that shows any text, and the step 8 diagnostics are
+      removed.
+      *Done when:* in a run with the Shield Flare, the row appears with its icon, counts
+      kills, disappears at 100 and comes back at `0/100` when the barrier breaks.
+      **Needs the user with the game open.**
 
-      **Resultado (partida del 2026-11-08, hasta las 02:03, v0.6.0):** el usuario vio el
-      contador funcionar. En `LogOutput.log`, la Shield Flare aparece en `0/100` con el
-      sprite `shieldflarev2`, desaparece con `kills=101 activa=True barrera=True` y vuelve en
-      `0/100` cuando se rompe la barrera. Sin crashes en Windows desde las 00:15.
-- [x] **10. Prender y apagar cada indicador desde el `.cfg` y desde un panel con F7.** A
-      pedido del usuario, antes de sumar indicadores de otras habilidades stackeables.
-      `Configuracion` guarda un `bool` por indicador en `[Indicadores]` de
-      `BepInEx\config\dalessandro.disfigure.temporizadores.cfg`; `PanelDeOpciones` abre con
-      F7 un panel con un botón por indicador, y las teclas 1 a 9 hacen lo mismo. Además,
-      `CartasQueStackean` escribe una vez en el log las cartas cuya descripción dice
-      "stack", para elegir los próximos indicadores. Ver
-      [ADR-0008](adr/0008-config-y-panel-con-f7.md).
-      *Hecho cuando:* el `.cfg` aparece con las tres entradas; en el juego, F7 abre el panel,
-      apagar un indicador lo saca del HUD y queda guardado en el `.cfg` después de reiniciar;
-      y el log tiene la lista de cartas que stackean.
-      **Necesita al usuario con el juego abierto.**
+      **Result (run on 2026-11-08, until 02:03, v0.6.0):** the user saw the counter work. In
+      `LogOutput.log`, the Shield Flare appears at `0/100` with sprite `shieldflarev2`,
+      disappears with `kills=101 active=True barrier=True` and comes back at `0/100` when
+      the barrier breaks. No crashes in Windows since 00:15.
+- [x] **10. Turn each indicator on and off from the `.cfg` and from an F7 panel.** Asked by
+      the user, before adding indicators for other stacking skills. One `bool` per indicator
+      in the plugin's `.cfg`; F7 opens a panel with one button per indicator, and keys 1 to
+      9 do the same. Also, the cards whose description says "stack" are logged once, to
+      pick the next indicators. See [ADR-0008](adr/0008-config-and-f7-panel.md).
+      *Done when:* the `.cfg` shows up with the three entries; in the game, F7 opens the
+      panel, turning an indicator off removes it from the HUD and it stays saved in the
+      `.cfg` after restarting; and the log has the list of stacking cards.
+      **Needs the user with the game open.**
 
-      **Resultado (2026-11-08, hasta las 02:26, v0.7.0):** el usuario dice que anda, aunque
-      "se ve un poco feo". El `.cfg` se creó con `ShieldBarrier`, `ProjectileBarrier` y
-      `ShieldFlare` en `true`. En `LogOutput.log`: `Panel abierto.`, `Shield Barrier:
-      apagado.` y enseguida `Shield Barrier: desaparece`, después `Shield Barrier: prendido.`
-      y `Shield Barrier: aparece en 2:59`. Sin crashes desde las 02:10. **Sin verificar:**
-      que un indicador apagado siga apagado al reiniciar; el usuario lo volvió a prender
-      antes de cerrar. El log también trae las 48 cartas (de 498) cuya descripción dice
-      "stack".
-- [ ] **11. Diagnóstico: las 17 cartas que stackean que eligió el usuario.** De las 48, el
-      usuario eligió tres grupos: las que se pierden si dejás de matar o pegar (Berserk, Kill
-      Spree, Rampage, Rapid Fire, Accelerating Barrel), las que duran unos segundos
-      (Overdrive, Fragment Surge, Ignition, Saw Burst, Radiant Missiles, Shrouded Frost) y las
-      que se cargan para el próximo disparo (Magnetic Rounds, Molten Rounds, One in the
-      Chamber, Ricochet Rebound, Plague, Psychic Fortification). `DiagnosticoDeStacks` lee los
-      campos candidatos por reflexión cada 0.1 s y escribe una línea cuando cambia el
-      desbloqueo o el valor de una carta, con el tiempo en ese momento. Además del log de
-      BepInEx, escribe en `BepInEx\Temporizadores-diagnostico.log`, que se acumula entre
-      arranques: las cartas salen al azar y hacen falta varias partidas. Saca
-      `CartasQueStackean`.
+      **Result (2026-11-08, until 02:26, v0.7.0):** the user says it works, though "it looks
+      a bit ugly". The `.cfg` was created with `ShieldBarrier`, `ProjectileBarrier` and
+      `ShieldFlare` set to `true`. In `LogOutput.log`: the panel opens, Shield Barrier is
+      turned off and right after disappears, then is turned on and appears at `2:59`. No
+      crashes since 02:10. **Not verified:** that a turned-off indicator stays off after a
+      restart; the user turned it back on before closing. The log also has the 48 cards (of
+      498) whose description says "stack".
+- [ ] **11. Diagnostics: the 17 stacking cards the user picked.** Of the 48, the user picked
+      three groups: the ones lost if you stop killing or hitting (Berserk, Kill Spree,
+      Rampage, Rapid Fire, Accelerating Barrel), the ones lasting a few seconds (Overdrive,
+      Fragment Surge, Ignition, Saw Burst, Radiant Missiles, Shrouded Frost) and the ones
+      charged for the next shot (Magnetic Rounds, Molten Rounds, One in the Chamber,
+      Ricochet Rebound, Plague, Psychic Fortification). `StackDiagnostics` reads the
+      candidate fields by reflection every 0.1 s and writes a line when a card's unlock or
+      value changes, with the time at that moment. Besides the BepInEx log, it appends to a
+      file in `BepInEx\` that keeps growing across launches: cards are random and several
+      runs are needed. Since 1.0.0 it is off by default (`[Debug] StackDiagnostics` in the
+      `.cfg`).
 
-      | Carta | Desbloqueo | Valor | Tiempo |
+      | Card | Unlock | Value | Time |
       |---|---|---|---|
       | Berserk | `berserk` | `berserkMultiplier` | `berserkTimer` |
       | Kill Spree | `killSpree` | `killSpreeBuff` | `killSpreeTimer` |
@@ -248,7 +237,7 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       | Fragment Surge | `splintersurge`? | `splintersurgeMultiplier` | `splintersurgeTimer` |
       | Ignition | `ignition` | `ignitionFireRateBuff` | `ignitionTimer` |
       | Saw Burst | `sawBurst` | `WM.sawBurstBuff` | `WM.sawBurstTimer` |
-      | Radiant Missiles | ninguno encontrado | `radiantMissilesMultiplier` | `radiantMissilesTimer` |
+      | Radiant Missiles | none found | `radiantMissilesMultiplier` | `radiantMissilesTimer` |
       | Shrouded Frost | `concealedSpiral`? | `concealedSpiralBuff`, `concealedSpiralBuffLevel` | `concealedSpiralBuffTimer` |
       | Magnetic Rounds | `magneticRounds` | `WM.magneticRoundMultiplier` | — |
       | Molten Rounds | `moltenRounds` | `moltenRoundsDamageMultiplier` | — |
@@ -257,65 +246,86 @@ Cómo cuenta cada uno está en el resultado del paso 3.
       | Plague | `plague` | `plagueStackCount` | — |
       | Psychic Fortification | `noxiousFortification`? | `WM.noxiousRemnantBuff` | — |
 
-      Sin prefijo, los campos son de `PlayerStats`; `WM.` es `WeaponManager`. Los que llevan
-      `?` tienen un nombre interno distinto del de la carta y son los más dudosos.
-      *Hecho cuando:* para cada carta que el usuario haya agarrado, queda anotado qué campo
-      la desbloquea, cómo sube el valor, cuánto dura y cuándo se reinicia. Las que no
-      salgan siguen en este paso hasta que salgan.
-      **Necesita al usuario jugando varias partidas.**
+      Without a prefix, fields are on `PlayerStats`; `WM.` is `WeaponManager`. The ones with
+      `?` have an internal name different from the card's and are the least certain.
+      *Done when:* for each card the user picked, it is written down which field unlocks it,
+      how the value rises, how long it lasts and when it resets. The ones that do not come
+      up stay in this step until they do.
+      **Needs the user playing several runs.**
 
-      **Resultado parcial (tres arranques del 2026-11-08, 9549 líneas en
-      `Temporizadores-diagnostico.log`):** salieron 4 de las 17. Las 13 restantes no se
-      desbloquearon nunca, y el diagnóstico sigue con ellas.
-      - **Kill Spree:** `killSpree` la desbloquea. `killSpreeBuff` sube 0.05 por kill hasta
-        1.35. `killSpreeTimer` vuelve a casi 0 en cada kill y cuenta para arriba; cuando
-        llega a 3.00, el buff vuelve a 1.00 (la carta dice "Resets after 3 seconds without
-        killing"). Fuera de una partida vale 100.
-      - **Rapid Fire:** `rapidFire` la desbloquea. `rapidFireMultiplier` sube 0.15 hasta
-        **1.90** (la carta dice +75%) y vuelve a 1.00 entre 0.7 y 1.1 s después del último
-        aumento. No hay campo con ese tiempo.
-      - **Ricochet Rebound:** `ricochetRebound` la desbloquea. `ricochetReboundMultiplier`
-        sube 0.15 hasta **1.90** (la carta dice +75%) y vuelve a 1.00 con el próximo disparo.
-      - **Magnetic Rounds:** `magneticRounds` la desbloquea.
-        `WeaponManager.magneticRoundMultiplier` sube 0.05 por EXP juntada, llegó a 2.05, y
-        vuelve a 1.00 con cada disparo: cambió 7790 veces y volvió a 1.00 3236 veces.
-- [x] **12. Los indicadores de Kill Spree, Rapid Fire, Ricochet Rebound y Magnetic Rounds.**
-      Con lo que mostró el paso 11, `Stacks` arma el texto de cada uno: `+35% · 2.1s` para
-      Kill Spree (el bonus y lo que falta para que se reinicie) y `+90%` para las otras
-      tres. Se muestran mientras la carta está desbloqueada, también en `+0%`: los valores
-      cambian varias veces por segundo, y una fila que aparece y desaparece a ese ritmo no
-      se puede leer. Cada uno tiene su entrada en el `.cfg` y su botón en el panel de F7.
-      Las cuatro cartas salen del diagnóstico.
-      *Hecho cuando:* en una partida con alguna de las cuatro, su fila aparece con el icono
-      y el bonus sube y baja como en el juego.
-      **Necesita al usuario con el juego abierto.**
+      **Partial result (three launches on 2026-11-08, 9549 lines of diagnostics):** 4 of the
+      17 came up. The other 13 were never unlocked, and the diagnostics keep following them.
+      - **Kill Spree:** `killSpree` unlocks it. `killSpreeBuff` goes up 0.05 per kill up to
+        1.35. `killSpreeTimer` goes back to about 0 on every kill and counts up; when it
+        reaches 3.00, the buff goes back to 1.00 (the card says "Resets after 3 seconds
+        without killing"). Outside a run it is 100.
+      - **Rapid Fire:** `rapidFire` unlocks it. `rapidFireMultiplier` goes up 0.15 up to
+        **1.90** (the card says +75%) and goes back to 1.00 between 0.7 and 1.1 s after the
+        last increase. No field holds that time.
+      - **Ricochet Rebound:** `ricochetRebound` unlocks it. `ricochetReboundMultiplier` goes
+        up 0.15 up to **1.90** (the card says +75%) and goes back to 1.00 on the next shot.
+      - **Magnetic Rounds:** `magneticRounds` unlocks it.
+        `WeaponManager.magneticRoundMultiplier` goes up 0.05 per EXP picked up, reached 2.05,
+        and goes back to 1.00 on every shot: it changed 7790 times and went back to 1.00 3236
+        times.
+- [x] **12. Kill Spree, Rapid Fire, Ricochet Rebound and Magnetic Rounds indicators.** With
+      what step 11 showed, the text of each: `+35% · 2.1s` for Kill Spree (the bonus and the
+      time left before it resets) and `+90%` for the other three. They show while the card
+      is unlocked, including at `+0%`: the values change several times per second, and a
+      row appearing and disappearing that fast cannot be read. Each has its `.cfg` entry and
+      its F7 panel button. The four cards leave the diagnostics.
+      *Done when:* in a run with any of the four, its row appears with the icon and the bonus
+      goes up and down as in the game.
+      **Needs the user with the game open.**
 
-      **Resultado (2026-11-09, v0.8.0):** el usuario dice que se ven bien. **Sin evidencia en
-      el log:** el último arranque, que es el que queda en `LogOutput.log` (hasta las
-      01:42), no tuvo ninguna partida (sólo `Temporizadores cargado.`), y BepInEx pisa el log
-      de los arranques anteriores. El `.cfg` tiene las cuatro entradas nuevas en `true`. Sin
-      crashes en Windows desde el 2026-11-09 a las 00:00.
+      **Result (2026-11-09, v0.8.0):** the user says they look good. **No log evidence:** the
+      last launch, which is the one left in `LogOutput.log` (until 01:42), had no run (only
+      the load line), and BepInEx overwrites the log of earlier launches. The `.cfg` has the
+      four new entries set to `true`. No crashes in Windows since 2026-11-09 00:00.
 
 ---
 
-## Después
+## Public release
 
-Ideas que todavía no son pasos: falta una decisión o un dato.
+- [ ] **13. Buff Tracker 1.0.0, everything in English.** Asked by the user, to publish the
+      mod so anyone can use it. The mod becomes Buff Tracker (project, DLL, GUID and `.cfg`
+      renamed); code, comments, HUD, panel, `.cfg`, log lines, README, ADRs, this backlog
+      and `CLAUDE.md` are translated to English. The stack diagnostics are off by default.
+      `tools/package.ps1` builds `dist/BuffTracker-1.0.0.zip` with the layout the mod manager
+      requires. MIT license and a `CHANGELOG.md`. See
+      [ADR-0009](adr/0009-english-and-buff-tracker-name.md).
+      *Done when:* the old `Temporizadores` plugin is gone from the game,
+      `BepInEx\LogOutput.log` loads `Buff Tracker 1.0.0`, the new `.cfg` is created, and in a
+      run the indicators, icons and F7 panel work as before, in English.
+      **Needs the user with the game open.**
+- [ ] **14. Publish the repo and the 1.0.0 release on GitHub.** A public repository on the
+      user's account, with the code and a `v1.0.0` release carrying the zip and its
+      `.sha256`. Only with the user's go-ahead: it is public.
+      *Done when:* the release zip downloads from its `https` URL and installs by hand.
+- [ ] **15. Propose Buff Tracker to the Disfigure-Mod-Manager catalog.** A pull request to
+      `Purpledudr/Disfigure-Mod-Manager` adding an entry to `plugins.json`
+      (`packageType: zip`, `archivePath:
+      BepInEx/plugins/Disfigure.Mods.BuffTracker/Disfigure.Mods.BuffTracker.dll`,
+      `downloadUrl` pointing to the step 14 release), plus a note on the Discord. Only with
+      the user's go-ahead.
+      *Done when:* the pull request is open; being listed depends on the author.
 
-- **La Shield Boost en el HUD** (`+X%` y las kills que faltan para el próximo +5%). Hay que
-  decidir qué mostrar después de que rompen la barrera: el juego deja `shieldBoostI` en la
-  meta vieja y el multiplicador no vuelve a subir (paso 8). Cuando el usuario la pida.
-- **Un panel de F7 más lindo**, con Unity UI en lugar de IMGUI básico. El usuario dijo
-  que el actual "se ve un poco feo pero funciona". Pide un ADR que reemplace la parte del
-  panel de ADR-0008.
-- **Indicadores de otras habilidades que stackean** (paso 10 tiene la lista): cada una con
-  su diagnóstico, como la Shield Flare. Cuando el usuario elija cuáles.
-- **Más timers en el HUD**, como el dash (`PlayerStats.dashRechargeTimer`), el parry
-  (`WeaponManager.parryRechargeTimer`) o la invulnerabilidad
-  (`WeaponManager.invulnerabilityTimer`), definidos en una sola lista. Cuando los escudos
-  funcionen de punta a punta, y el usuario elija cuáles.
-- **`Disfigure.Comun` en `BepInEx\plugins\`**, con el código compartido entre mods. Recién
-  cuando un segundo mod repita código del primero (ADR-0003).
-- **Proponerle el mod al autor de Disfigure-Mod-Manager** para que lo sume a su
-  `plugins.json`. Cuando el mod esté verificado con BepInEx, y si el usuario quiere
-  publicarlo.
+---
+
+## Later
+
+Ideas that are not steps yet: a decision or a piece of data is missing.
+
+- **Shield Boost on the HUD** (`+X%` and the kills left for the next +5%). What to show after
+  the barrier breaks has to be decided: the game leaves `shieldBoostI` at the old target and
+  the multiplier does not go up again (step 8). When the user asks for it.
+- **A nicer F7 panel**, with Unity UI instead of basic IMGUI. The user said the current one
+  "looks a bit ugly but works". Needs an ADR superseding the panel part of ADR-0008.
+- **Indicators for the 13 stacking cards still in step 11**: each one when it comes up in the
+  diagnostics.
+- **More timers on the HUD**, like the dash (`PlayerStats.dashRechargeTimer`), the parry
+  (`WeaponManager.parryRechargeTimer`) or invulnerability
+  (`WeaponManager.invulnerabilityTimer`), defined in a single list. When the user picks
+  which.
+- **A common library in `BepInEx\plugins\`**, with code shared between mods. Only when a
+  second mod repeats code from the first (ADR-0003).

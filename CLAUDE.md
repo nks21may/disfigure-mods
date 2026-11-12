@@ -1,80 +1,92 @@
-# Notas para trabajar en este repo
+# Notes for working in this repo
 
-## Qué es
+## What it is
 
-Mods para **Disfigure** (ColdBrew Entertainment), un roguelike de disparos con vista
-cenital hecho en Unity 6000.3.16f1 con IL2CPP, que no tiene soporte oficial de mods. Los
-mods son plugins de **BepInEx 6.0.0-be.785** (Unity IL2CPP, win-x64), la misma build que usa
-la comunidad a través de
-[Disfigure-Mod-Manager](https://github.com/Purpledudr/Disfigure-Mod-Manager). BepInEx genera
-los assemblies interop del juego en la instalación local
+Mods for **Disfigure** (ColdBrew Entertainment), a top-down roguelike shooter made in Unity
+6000.3.16f1 with IL2CPP, which has no official mod support. The mods are **BepInEx
+6.0.0-be.785** plugins (Unity IL2CPP, win-x64), the same build the community uses through
+[Disfigure-Mod-Manager](https://github.com/Purpledudr/Disfigure-Mod-Manager). BepInEx
+generates the game's interop assemblies in the local install
 (`J:\SteamLibrary\steamapps\common\Disfigure\BepInEx\interop`).
 
-Stack: C# con `net6.0` y el .NET SDK 10 fijado en `global.json`. No habla con otros repos.
+There is one mod so far, **Buff Tracker** (`src/Disfigure.Mods.BuffTracker`).
 
-Antes de proponer un diseño, leé el [índice de ADR](docs/adr/README.md). Casi
-todo lo que parece una decisión abierta ya está decidido y con motivo.
+Stack: C# on `net6.0` and the .NET SDK 10 pinned in `global.json`. It talks to no other repo.
 
-## Reglas que no se negocian desde el código
+Before proposing a design, read the [ADR index](docs/adr/README.md). Almost everything that
+looks like an open decision is already decided, with a reason.
 
-Cada una tiene un ADR detrás.
+## Rules that are not negotiated from the code
 
-1. **Los mods son plugins de BepInEx 6 be.785 (`BasePlugin`), apuntan a `net6.0`, y el lint
-   vive en el build** (los analizadores y el formato son errores). `Update` y `OnGUI` van en
-   un `MonoBehaviour` propio que el plugin agrega con `AddComponent<T>()`.
-   [ADR-0001](docs/adr/0001-melonloader-net6-y-gate-en-el-host.md),
-   [ADR-0006](docs/adr/0006-bepinex-6-en-lugar-de-melonloader.md)
-2. **Un proyecto por mod, desplegado en `BepInEx\plugins\<mod>\`.** Las referencias al juego
-   y a BepInEx salen de la instalación local con `Private=false`: ningún DLL del juego ni de
-   BepInEx entra al repo. [ADR-0003](docs/adr/0003-un-proyecto-por-mod.md)
-3. **No hay gate ni tests: un paso está hecho cuando `dotnet build DisfigureMods.slnx`
-   da exit 0 y, si se ve en el juego, se lo vio funcionar.** El commit de ese paso lleva las
-   líneas de `BepInEx\LogOutput.log` que lo muestran.
-   [ADR-0004](docs/adr/0004-sin-gate-se-prueba-en-el-juego.md)
+Each one has an ADR behind it.
 
-## Convenciones
+1. **Mods are BepInEx 6 be.785 plugins (`BasePlugin`), target `net6.0`, and lint lives in
+   the build** (analyzers and formatting are errors). `Update` and `OnGUI` go in an own
+   `MonoBehaviour` the plugin adds with `AddComponent<T>()`.
+   [ADR-0001](docs/adr/0001-melonloader-net6-and-host-gate.md),
+   [ADR-0006](docs/adr/0006-bepinex-6-instead-of-melonloader.md)
+2. **One project per mod, deployed to `BepInEx\plugins\<mod>\`.** References to the game
+   and to BepInEx come from the local install with `Private=false`: no game or BepInEx DLL is
+   ever committed. [ADR-0003](docs/adr/0003-one-project-per-mod.md)
+3. **No gate and no tests: a step is done when `dotnet build DisfigureMods.slnx` exits 0
+   and, if it shows in the game, it was seen working.** The commit for that step carries the
+   `BepInEx\LogOutput.log` lines that show it.
+   [ADR-0004](docs/adr/0004-no-gate-test-in-the-game.md)
+4. **Everything in the repo is in English** (code, comments, mod texts, docs, commit
+   messages). Talk to the user in Spanish.
+   [ADR-0009](docs/adr/0009-english-and-buff-tracker-name.md)
 
-- **Código y documentación en español**, incluidos los nombres de clases, métodos
-  y variables.
-- Los identificadores no llevan tildes ni `ñ` (`TamanoBytes`, no `TamañoBytes`);
-  los comentarios y la documentación XML sí, con ortografía correcta.
-- Los tipos y miembros del juego quedan como los nombró el desarrollador
-  (`PlayerStats.maxHealth`): son del juego, no nuestros. Con BepInEx están en el namespace
-  global, sin el prefijo `Il2Cpp.` que agregaba MelonLoader.
-- El lint y el formato los corre el build, así que no hay que acordarse: un hallazgo no
-  compila.
+## Conventions
 
-## Cómo se trabaja
+- Game types and members keep the developer's names (`PlayerStats.maxHealth`): they belong
+  to the game, not to us. With BepInEx they live in the global namespace, without the
+  `Il2Cpp.` prefix MelonLoader added.
+- Lint and formatting are run by the build, so there is nothing to remember: a finding does
+  not build.
+- The plugin version lives in `BuffTrackerPlugin.Version` and in the `.csproj` `<Version>`;
+  keep them in sync, because the mod manager reads it from the DLL. Each release gets a
+  `CHANGELOG.md` entry.
 
-Un paso del [backlog](docs/backlog.md) a la vez, un commit por paso. Si un paso necesita una
-decisión cara de revertir, el ADR va antes que el código.
+## How to work
+
+One [backlog](docs/backlog.md) step at a time, one commit per step. If a step needs a
+decision that is expensive to reverse, the ADR comes before the code.
 
 ```bash
 dotnet build DisfigureMods.slnx
 ```
 
-No reportes un paso como hecho en base a tu lectura del diff: compila, y si toca el juego,
-se probó en el juego. Cuidado con los pipes: `comando | tail` devuelve el exit code de
-`tail` y te oculta el error.
+Deploy to the game (with the game closed if the mod is loaded):
 
-**Antes de usar un método de Unity que el mod no usaba, revisá que exista en el build del
-juego:** `herramientas/metodos-nativos.ps1 <dll del interop> <tipo> <métodos>` dice si
-tiene `NativeMethodInfoPtr_*` (`NATIVO`) o si Il2CppInterop lo reconstruyó (`RECONSTRUIDO`).
-Un método reconstruido puede crashear el juego sin excepción: así pasó con
+```bash
+dotnet build DisfigureMods.slnx -p:Deploy=true
+```
+
+Release package: `tools/package.ps1` writes `dist/BuffTracker-<version>.zip` and its
+`.sha256`.
+
+Do not report a step as done based on reading the diff: it builds, and if it touches the
+game, it was tried in the game. Mind pipes: `command | tail` returns `tail`'s exit code and
+hides the error.
+
+**Before using a Unity method the mod did not use before, check that it exists in the game
+build:** `tools/native-methods.ps1 <interop dll> <type> <methods>` says whether it has a
+`NativeMethodInfoPtr_*` field (`NATIVE`) or Il2CppInterop rebuilt it (`RECONSTRUCTED`). A
+reconstructed method can crash the game without an exception: that is what happened with
 `GUI.DrawTextureWithTexCoords` (ADR-0005, ADR-0007).
 
-Smart App Control está activado en esta máquina y se decidió ignorarlo (ADR-0004): puede
-bloquear el DLL de un mod. Si un mod no aparece en `BepInEx\LogOutput.log`, buscá el evento
-3077 en `Microsoft-Windows-CodeIntegrity/Operational` antes de buscar el error en el código.
-Si el juego entero no arranca ("Failed to load il2cpp") y `LogOutput.log` no se actualizó,
-mirá si el 3077 es de `GameAssembly.dll`: el 2026-11-09 pasó sin mods y se resolvió
-reiniciando la PC (README).
+Smart App Control is on on this machine and it was decided to ignore it (ADR-0004): it can
+block a mod's DLL. If a mod does not show up in `BepInEx\LogOutput.log`, look for event 3077
+in `Microsoft-Windows-CodeIntegrity/Operational` before looking for the bug in the code. If
+the whole game does not start ("Failed to load il2cpp") and `LogOutput.log` was not
+updated, check whether the 3077 is for `GameAssembly.dll`: on 2026-11-09 it happened without
+mods and went away after restarting the PC (README).
 
-## De dónde salen las decisiones
+## Where the decisions come from
 
-De la instalación local del juego y de los primeros arranques con MelonLoader y con
-BepInEx, el 2026-11-07. La versión de Unity sale de `UnityPlayer.dll`; la de la metadata,
-del encabezado de `Disfigure_Data\il2cpp_data\Metadata\global-metadata.dat`; lo que hace el
-loader, de `J:\SteamLibrary\steamapps\common\Disfigure\BepInEx\LogOutput.log`. MelonLoader
-quedó respaldado en `J:\SteamLibrary\Disfigure-MelonLoader-respaldo-2026-11-07`. No hay un
-sistema anterior ni repos hermanos.
+From the local game install and the first launches with MelonLoader and with BepInEx, on
+2026-11-07. The Unity version comes from `UnityPlayer.dll`; the metadata version from the
+header of `Disfigure_Data\il2cpp_data\Metadata\global-metadata.dat`; what the loader does
+from `J:\SteamLibrary\steamapps\common\Disfigure\BepInEx\LogOutput.log`. MelonLoader was
+backed up to `J:\SteamLibrary\Disfigure-MelonLoader-respaldo-2026-11-07`. There is no
+previous system and no sibling repo. History before ADR-0009 (2026-11-12) is in Spanish.
