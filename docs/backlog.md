@@ -287,7 +287,7 @@ How each one counts is in the result of step 3.
 
 ## Public release
 
-- [ ] **13. Buff Tracker 1.0.0, everything in English.** Asked by the user, to publish the
+- [x] **13. Buff Tracker 1.0.0, everything in English.** Asked by the user, to publish the
       mod so anyone can use it. The mod becomes Buff Tracker (project, DLL, GUID and `.cfg`
       renamed); code, comments, HUD, panel, `.cfg`, log lines, README, ADRs, this backlog
       and `CLAUDE.md` are translated to English. The stack diagnostics are off by default.
@@ -298,6 +298,14 @@ How each one counts is in the result of step 3.
       `BepInEx\LogOutput.log` loads `Buff Tracker 1.0.0`, the new `.cfg` is created, and in a
       run the indicators, icons and F7 panel work as before, in English.
       **Needs the user with the game open.**
+
+      **Result (2026-11-12, until 11:13):** the user says everything works as before. The old
+      plugin, its `.cfg` and its diagnostics log were moved to
+      `J:\SteamLibrary\Disfigure-plugins-desactivados`. In `LogOutput.log`: `Loading [Buff
+      Tracker 1.0.0]`, the load line, `Ricochet Rebound: appears at +0% (multiplier=1.00)`,
+      `Icon for Ricochet Rebound: sprite 'ricochetreboundv1_new (2)'`, the canvas and the
+      image created. The new `.cfg` has `[Debug] StackDiagnostics = false` and the seven
+      `[Indicators]` entries. No crashes in Windows that day.
 - [ ] **14. Publish the repo and the 1.0.0 release on GitHub.** A public repository on the
       user's account, with the code and a `v1.0.0` release carrying the zip and its
       `.sha256`. Only with the user's go-ahead: it is public.
