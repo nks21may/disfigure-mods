@@ -306,10 +306,24 @@ How each one counts is in the result of step 3.
       `Icon for Ricochet Rebound: sprite 'ricochetreboundv1_new (2)'`, the canvas and the
       image created. The new `.cfg` has `[Debug] StackDiagnostics = false` and the seven
       `[Indicators]` entries. No crashes in Windows that day.
-- [ ] **14. Publish the repo and the 1.0.0 release on GitHub.** A public repository on the
+- [x] **14. Publish the repo and the 1.0.0 release on GitHub.** A public repository on the
       user's account, with the code and a `v1.0.0` release carrying the zip and its
       `.sha256`. Only with the user's go-ahead: it is public.
       *Done when:* the release zip downloads from its `https` URL and installs by hand.
+
+      **Result (2026-11-12):** with the user's go-ahead, `main` was fast-forwarded to
+      `loop/construccion` and pushed to the new public repo
+      [nks21may/disfigure-mods](https://github.com/nks21may/disfigure-mods). Before that, the
+      tree and the history were checked for personal paths and secrets (none); the commit
+      email is the one already public on the user's GitHub profile. Release
+      [v1.0.0](https://github.com/nks21may/disfigure-mods/releases/tag/v1.0.0) has
+      `BuffTracker-1.0.0.zip` (18 540 bytes, SHA-256
+      `1d07b656c4eb789b979be05ca49dadb9e3f4477376e10fa8fb3f51310ce4a881`) and its `.sha256`.
+      Downloading
+      `https://github.com/nks21may/disfigure-mods/releases/download/v1.0.0/BuffTracker-1.0.0.zip`
+      gives the same hash and the entries
+      `BepInEx/plugins/Disfigure.Mods.BuffTracker/Disfigure.Mods.BuffTracker.dll` and
+      `.../LICENSE`. The same DLL was already installed and checked in a run in step 13.
 - [ ] **15. Propose Buff Tracker to the Disfigure-Mod-Manager catalog.** A pull request to
       `Purpledudr/Disfigure-Mod-Manager` adding an entry to `plugins.json`
       (`packageType: zip`, `archivePath:

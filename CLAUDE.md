@@ -65,6 +65,11 @@ dotnet build DisfigureMods.slnx -p:Deploy=true
 Release package: `tools/package.ps1` writes `dist/BuffTracker-<version>.zip` and its
 `.sha256`.
 
+The public repo is [nks21may/disfigure-mods](https://github.com/nks21may/disfigure-mods).
+Work happens on `loop/construccion`; `main` is what is published and only moves forward to
+it (fast-forward) when publishing. Pushing, releases and pull requests to other repos are
+public: do them only with the user's go-ahead.
+
 Do not report a step as done based on reading the diff: it builds, and if it touches the
 game, it was tried in the game. Mind pipes: `command | tail` returns `tail`'s exit code and
 hides the error.

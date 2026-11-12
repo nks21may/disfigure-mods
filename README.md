@@ -40,7 +40,7 @@ the panel open, keys **1** to **9** do the same). The choice is saved in
 1. Install BepInEx 6.0.0-be.785 in the game folder and launch the game once, so it sets
    itself up.
 2. Download `BuffTracker-<version>.zip` from the
-   [releases](../../releases).
+   [latest release](https://github.com/nks21may/disfigure-mods/releases/latest).
 3. Extract it into the game folder. It only contains
    `BepInEx/plugins/Disfigure.Mods.BuffTracker/`.
 4. Launch the game. `BepInEx\LogOutput.log` should say `Buff Tracker 1.0.0 loaded`.
